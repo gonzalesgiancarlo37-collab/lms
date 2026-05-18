@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Specialty;
 
 class User extends Authenticatable
 {
@@ -27,6 +28,11 @@ class User extends Authenticatable
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
+    }
+
+    public function specialties()
+    {
+        return $this->belongsToMany(Specialty::class, 'teacher_specialties', 'user_id', 'specialty_id');
     }
 
     public function trainings()
