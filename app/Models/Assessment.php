@@ -15,7 +15,8 @@ class Assessment extends Model
         'start_date',
         'end_date',
         'allowed_attempts',
-        'active'
+        'active',
+        'time_limit'
     ];
 
     public function training()

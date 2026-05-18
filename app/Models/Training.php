@@ -12,9 +12,7 @@ class Training extends Model
         'course_id',
         'teacher_id',
         'administrator_id',
-        'start_date',
-        'end_date',
-        'schedule',
+        'modality',
         'price',
         'creation_date',
         'status'
