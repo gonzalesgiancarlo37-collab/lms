@@ -16,7 +16,7 @@ class TrainingController extends Controller
      */
     public function index()
     {
-        $trainings = Training::with('course')
+        $trainings = Training::with(['course', 'teacher.person', 'administrator.person'])
             ->where('status', 'A')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -46,9 +46,7 @@ class TrainingController extends Controller
         $request->validate([
             'course_id' => 'required|exists:courses,course_id',
             'teacher_id' => 'required|exists:users,user_id',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'schedule' => 'required|string|max:255',
+            'modality' => 'required|in:virtual,presential,hybrid',
             'price' => 'required|numeric|min:0.01',
         ]);
 
@@ -56,9 +54,7 @@ class TrainingController extends Controller
             'course_id' => $request->course_id,
             'teacher_id' => $request->teacher_id,
             'administrator_id' => auth()->id(),
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'schedule' => $request->schedule,
+            'modality' => $request->modality,
             'price' => $request->price,
             'creation_date' => now()->toDateString(),
             'status' => 'A',

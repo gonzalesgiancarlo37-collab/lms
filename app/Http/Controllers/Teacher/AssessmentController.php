@@ -42,6 +42,7 @@ class AssessmentController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'allowed_attempts' => 'required|integer|min:1',
+            'time_limit' => 'nullable|integer|min:1',
             'active' => 'sometimes|boolean',
         ]);
 
@@ -58,6 +59,7 @@ class AssessmentController extends Controller
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'allowed_attempts' => $request->allowed_attempts,
+            'time_limit' => $request->time_limit ?? 60,
             'active' => $request->has('active'),
         ]);
 
@@ -112,6 +114,7 @@ class AssessmentController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'allowed_attempts' => 'required|integer|min:1',
+            'time_limit' => 'nullable|integer|min:1',
             'active' => 'sometimes|boolean',
         ]);
 
@@ -136,6 +139,7 @@ class AssessmentController extends Controller
             'description' => $request->description ?? null,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
+            'time_limit' => $request->time_limit ?? $assessment->time_limit,
             'allowed_attempts' => $request->allowed_attempts,
             'active' => $request->has('active'),
         ]);

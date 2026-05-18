@@ -110,40 +110,29 @@ class TeacherController extends Controller
     public function storeAttendance(Request $request)
     {
         $request->validate([
-            'training_id' => 'required|exists:trainings,training_id',
+            'schedule_id' => 'required|exists:schedules,schedule_id',
             'attendances' => 'required|array',
-            'attendances.*.student_id' => 'required|exists:users,user_id',
-            'attendances.*.status' => 'required|in:P,A'
+            'attendances.*.enrollment_id' => 'required|exists:enrollments,enrollment_id',
+            'attendances.*.attendance' => 'required|in:present,absent,late'
         ]);
 
         $user = auth()->user();
 
-        $training = Training::where('training_id', $request->training_id)
-            ->where('teacher_id', $user->user_id)
-            ->first();
+        $schedule = \App\Models\Schedule::with('training')->findOrFail($request->schedule_id);
 
-        if (!$training) {
-            abort(403, 'No autorizado: Este training no te pertenece.');
+        if ($schedule->training->teacher_id !== $user->user_id) {
+            abort(403, 'No autorizado: Este horario no pertenece a tus trainings.');
         }
 
-        $enrolledStudentIds = $training->enrollments->pluck('student_id')->toArray();
-
-        DB::transaction(function () use ($request, $enrolledStudentIds) {
-            $date = now()->toDateString();
-
+        DB::transaction(function () use ($request, $schedule) {
             foreach ($request->attendances as $attendance) {
-                if (!in_array($attendance['student_id'], $enrolledStudentIds)) {
-                    continue;
-                }
-
                 Attendance::updateOrCreate(
                     [
-                        'training_id' => $request->training_id,
-                        'student_id' => $attendance['student_id'],
-                        'date' => $date
+                        'schedule_id' => $request->schedule_id,
+                        'enrollment_id' => $attendance['enrollment_id']
                     ],
                     [
-                        'status' => $attendance['status']
+                        'attendance' => $attendance['attendance']
                     ]
                 );
             }
