@@ -46,7 +46,14 @@ class Training extends Model
 
     public function attendances()
     {
-        return $this->hasMany(Attendance::class, 'training_id', 'training_id');
+        return $this->hasManyThrough(
+            Attendance::class,
+            Schedule::class,
+            'training_id',
+            'schedule_id',
+            'training_id',
+            'schedule_id'
+        );
     }
 
     public function assessments()

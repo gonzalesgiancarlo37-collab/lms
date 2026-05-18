@@ -14,8 +14,13 @@ class People extends Model
     protected $fillable = [
         'first_names',
         'last_names',
+        'document_type',
         'document_number',
-        'email'
+        'phone',
+        'address',
+        'email',
+        'gender',
+        'birth_date'
     ];
 
     public function user()

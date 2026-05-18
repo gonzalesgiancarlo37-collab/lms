@@ -13,6 +13,7 @@ class Enrollment extends Model
         'student_id',
         'administrator_id',
         'enrollment_date',
+        'scholarship_percentage',
         'status'
     ];
 
