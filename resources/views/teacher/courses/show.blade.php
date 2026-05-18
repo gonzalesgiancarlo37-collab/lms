@@ -104,7 +104,7 @@
                     <!-- Quick Actions -->
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
-                            <a href="{{ route('teacher.attendance', $training->training_id) }}" class="text-decoration-none">
+                            <a href="{{ route('teacher.attendance.create', ['training_id' => $training->training_id]) }}" class="text-decoration-none">
                                 <div class="card border-start border-primary border-3 shadow-sm h-100"
                                     style="cursor: pointer; transition: box-shadow 0.3s;">
                                     <div class="card-body">
@@ -203,7 +203,7 @@
                 @elseif(request('tab') === 'asistencias')
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-dark mb-0">Registro de Asistencias</h5>
-                        <a href="{{ route('teacher.attendance', $training->training_id) }}" class="btn btn-sm btn-primary">
+                        <a href="{{ route('teacher.attendance.create', ['training_id' => $training->training_id]) }}" class="btn btn-sm btn-primary">
                             <i class="bi bi-arrow-right me-1"></i>Registrar Asistencia
                         </a>
                     </div>
@@ -348,6 +348,11 @@
                         <div class="form-group mt-3">
                             <label for="assessment-allowed-attempts" class="form-label">Intentos permitidos</label>
                             <input type="number" name="allowed_attempts" id="assessment-allowed-attempts" class="form-control" min="1" value="1" required>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="assessment-time-limit" class="form-label">Límite de Tiempo (Minutos)</label>
+                            <input type="number" name="time_limit" id="assessment-time-limit" class="form-control" min="0" value="0">
+                            <small class="form-text text-muted">Dejar en 0 o vacío para usar el tiempo estándar (60 minutos).</small>
                         </div>
                         <div class="form-check mt-3">
                             <input type="checkbox" name="active" id="assessment-active" class="form-check-input" checked>

@@ -11,7 +11,7 @@
                 <div class="card bg-light border-0 p-3">
                     <div class="text-center">
                         <small class="d-block text-muted mb-1">Tiempo restante</small>
-                        <div id="timer" class="h4 fw-bold text-danger mb-0">
+                        <div id="timer" class="h4 fw-bold text-primary mb-0">
                             <span id="minutes">60</span>:<span id="seconds">00</span>
                         </div>
                     </div>
@@ -87,11 +87,16 @@
             let timeLimit = {{ $timeLimit }};
             let totalSeconds = timeLimit * 60;
             let remainingSeconds = totalSeconds;
+            let isSubmitting = false;
 
             const minutesSpan = document.getElementById('minutes');
             const secondsSpan = document.getElementById('seconds');
             const timerDiv = document.getElementById('timer');
             const examForm = document.getElementById('examForm');
+
+            examForm.addEventListener('submit', function() {
+                isSubmitting = true;
+            });
 
             function updateTimer() {
                 const minutes = Math.floor(remainingSeconds / 60);
@@ -102,16 +107,18 @@
 
                 // Cambiar color según tiempo restante
                 if (remainingSeconds <= 300) { // Menos de 5 minutos
-                    timerDiv.classList.remove('text-danger');
+                    timerDiv.classList.remove('text-primary');
                     timerDiv.classList.add('text-danger');
                 } else {
                     timerDiv.classList.remove('text-danger');
+                    timerDiv.classList.add('text-primary');
                 }
 
                 // Si el tiempo se agota, enviar el formulario
                 if (remainingSeconds <= 0) {
                     clearInterval(timerInterval);
                     alert('¡El tiempo ha terminado! Tu evaluación será enviada automáticamente.');
+                    isSubmitting = true;
                     examForm.submit();
                 } else {
                     remainingSeconds--;
@@ -126,6 +133,9 @@
 
             // Prevenir que el usuario cierre la pestaña sin advertencia
             window.addEventListener('beforeunload', function(e) {
+                if (isSubmitting) {
+                    return;
+                }
                 e.preventDefault();
                 e.returnValue = '';
             });

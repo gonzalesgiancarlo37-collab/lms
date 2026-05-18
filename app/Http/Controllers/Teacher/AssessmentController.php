@@ -59,7 +59,7 @@ class AssessmentController extends Controller
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'allowed_attempts' => $request->allowed_attempts,
-            'time_limit' => $request->time_limit ?? 60,
+            'time_limit' => ($request->time_limit && $request->time_limit > 0) ? $request->time_limit : 60,
             'active' => $request->has('active'),
         ]);
 
@@ -139,7 +139,7 @@ class AssessmentController extends Controller
             'description' => $request->description ?? null,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
-            'time_limit' => $request->time_limit ?? $assessment->time_limit,
+            'time_limit' => ($request->time_limit && $request->time_limit > 0) ? $request->time_limit : ($assessment->time_limit > 0 ? $assessment->time_limit : 60),
             'allowed_attempts' => $request->allowed_attempts,
             'active' => $request->has('active'),
         ]);

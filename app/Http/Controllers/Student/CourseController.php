@@ -78,7 +78,9 @@ class CourseController extends Controller
             ]);
         }
 
-        $timeLimit = 60;
+        // Si es un intento pendiente que se está reanudando, calculamos los minutos restantes reales.
+        $elapsedMinutes = Carbon::now()->diffInMinutes($attempt->created_at);
+        $timeLimit = max(1, $assessment->time_limit - $elapsedMinutes);
 
         return view('student.courses.take', compact('assessment', 'timeLimit', 'enrollment', 'attempt'));
     }
@@ -114,7 +116,7 @@ class CourseController extends Controller
 
         $this->ensureAttemptAllowed($assessment, $enrollment, $attempt);
 
-        $timeLimit = 60;
+        $timeLimit = $assessment->time_limit;
         $elapsedSeconds = Carbon::now()->diffInSeconds($attempt->created_at);
         $maxSeconds = ($timeLimit * 60) + 120;
 

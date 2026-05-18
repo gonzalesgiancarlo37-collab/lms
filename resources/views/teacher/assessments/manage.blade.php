@@ -7,7 +7,7 @@
                 <h1 class="h3 mb-2 text-gray-800">Evaluaciones de {{ $training->course->title }}</h1>
                 <p class="text-muted">Gestiona las evaluaciones del curso y crea preguntas para cada evaluación.</p>
             </div>
-            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#createAssessmentModal" data-bs-toggle="modal" data-bs-target="#createAssessmentModal">
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createAssessmentModal">
                 <i class="bi bi-plus-lg me-1"></i> Nueva Evaluación
             </button>
         </div>
@@ -63,8 +63,6 @@
                                         {{ $assessment->active ? 'Activo' : 'Inactivo' }}
                                     </span>
                                     <button class="btn btn-sm btn-outline-success add-question-btn" type="button"
-                                        data-toggle="modal"
-                                        data-target="#addQuestionModal"
                                         data-bs-toggle="modal"
                                         data-bs-target="#addQuestionModal"
                                         data-action="{{ route('teacher.assessments.questions.store', $assessment->assessment_id) }}">
@@ -125,7 +123,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="createAssessmentModalLabel">Nueva Evaluación</h5>
-                    <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="{{ route('teacher.assessments.store') }}" method="POST">
                     @csrf
@@ -153,6 +151,11 @@
                             <input type="number" class="form-control form-control-sm" id="allowed_attempts" name="allowed_attempts" value="{{ old('allowed_attempts', 1) }}" min="1" required>
                             @error('allowed_attempts') <div class="text-danger small">{{ $message }}</div> @enderror
                         </div>
+                        <div class="mb-3">
+                            <label for="time_limit" class="form-label">Límite de Tiempo (Minutos)</label>
+                            <input type="number" class="form-control form-control-sm" id="time_limit" name="time_limit" value="{{ old('time_limit', 0) }}" min="0">
+                            <div class="form-text text-muted">Usa 0 o vacío para el tiempo estándar (60 min).</div>
+                        </div>
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="active" name="active" value="1" {{ old('active') ? 'checked' : '' }}>
                             <label class="form-check-label" for="active">Activo</label>
@@ -163,7 +166,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary btn-sm">Guardar Evaluación</button>
                     </div>
                 </form>
@@ -176,7 +179,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addQuestionModalLabel">Nueva Pregunta</h5>
-                    <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="addQuestionForm" method="POST" action="">
                     @csrf
@@ -199,7 +202,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary btn-sm">Guardar Pregunta</button>
                     </div>
                 </form>
@@ -222,7 +225,7 @@
                 wrapper.innerHTML = `
                     <div class="input-group input-group-sm flex-grow-1">
                         <span class="input-group-text p-1">
-                            <input class="form-check-input mt-0" type="radio" name="correct_option" value="${index}" aria-label="Correcta">
+                            <input class="form-check-input mt-0" type="radio" name="correct_option" value="${index}" aria-label="Correcta" required>
                         </span>
                         <input type="text" name="options[${index}][text]" class="form-control form-control-sm" placeholder="Opción ${index + 1}" required>
                     </div>
