@@ -270,7 +270,7 @@
                         <div class="col-lg-4">
                             <div class="card shadow-sm border-0 h-100">
                                 <div class="card-header bg-light py-3">
-                                    <h6 class="mb-0 fw-bold">Tareas existentes</h6>
+                                    <h6 class="mb-0 fw-bold">Tareas creadas</h6>
                                 </div>
                                 <div class="card-body">
                                     <p class="text-muted small mb-3">Las tareas entregables asignadas se listan a continuación.</p>

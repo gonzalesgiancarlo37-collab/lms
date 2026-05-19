@@ -89,7 +89,10 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:Teacher'])
     Route::post('/submissions/{submission_id}/grade', [TaskController::class, 'grade'])->name('submissions.grade');
 
     Route::resource('assessments', AssessmentController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+    
+    // Rutas de Preguntas (Creación y Edición)
     Route::post('assessments/{assessment}/questions', [AssessmentController::class, 'addQuestion'])->name('assessments.questions.store');
+    Route::put('questions/{question_id}', [AssessmentController::class, 'updateQuestion'])->name('questions.update');
 });
 
 /*

@@ -65,7 +65,6 @@ class AssessmentController extends Controller
             'active' => $request->has('active'),
         ]);
 
-        // CORRECCIÓN: Se cambió 'course' por 'id' para coincidir exactamente con la ruta 'teacher/courses/{id}'
         return redirect()->route('teacher.courses.show', ['id' => $training->training_id, 'tab' => 'contenido'])
             ->with('success', 'Evaluación creada correctamente.');
     }
@@ -107,9 +106,52 @@ class AssessmentController extends Controller
             }
         });
 
-        // NOTA: Se mantiene 'id' ya que apunta a 'teacher.assessments.show' el cual hereda {assessment} del Resource de Laravel
-        return redirect()->route('teacher.assessments.show', ['id' => $assessment->training->training_id])
+        // CORRECCIÓN: Redirección corregida usando el parámetro nativo 'assessment' de la ruta del recurso
+        return redirect()->route('teacher.assessments.show', ['assessment' => $assessment->training->training_id])
             ->with('success', 'Pregunta agregada correctamente.');
+    }
+
+    public function updateQuestion(Request $request, $question_id)
+    {
+        $request->validate([
+            'question_text' => 'required|string',
+            'score' => 'required|integer|min:0',
+            'alternatives' => 'required|array|min:2',
+            'alternatives.*.text' => 'required|string',
+            'correct_alternative' => 'required|integer|min:0',
+        ]);
+
+        $user = auth()->user();
+
+        // Obtener pregunta con su evaluación y capacitación para comprobar permisos
+        $question = Question::with('assessment.training')->findOrFail($question_id);
+
+        if ($question->assessment->training->teacher_id !== $user->user_id) {
+            abort(403, 'No autorizado.');
+        }
+
+        DB::transaction(function () use ($request, $question) {
+            // Actualizar pregunta
+            $question->update([
+                'question_text' => $request->question_text,
+                'score' => $request->score,
+            ]);
+
+            // Eliminar alternativas anteriores de forma limpia
+            $question->alternatives()->delete();
+
+            // Insertar el set nuevo de alternativas modificado
+            foreach ($request->alternatives as $index => $alternativeData) {
+                Alternative::create([
+                    'question_id' => $question->question_id,
+                    'option_text'  => $alternativeData['text'],
+                    'is_correct'   => $request->correct_alternative == $index,
+                ]);
+            }
+        });
+
+        return redirect()->route('teacher.assessments.show', ['assessment' => $question->assessment->training->training_id])
+            ->with('success', 'Pregunta actualizada correctamente.');
     }
 
     public function update(Request $request, $id)
@@ -150,7 +192,7 @@ class AssessmentController extends Controller
             'active' => $request->has('active'),
         ]);
 
-        return redirect()->route('teacher.assessments.show', ['id' => $assessment->training->training_id])
+        return redirect()->route('teacher.assessments.show', ['assessment' => $assessment->training->training_id])
             ->with('success', 'Evaluación actualizada correctamente.');
     }
 
@@ -175,7 +217,7 @@ class AssessmentController extends Controller
         $trainingId = $assessment->training->training_id;
         $assessment->delete();
 
-        return redirect()->route('teacher.assessments.show', ['id' => $trainingId])
-            ->with('success', 'Evaluación eliminada correctamente.');
+        return redirect()->route('teacher.assessments.show', ['assessment' => $trainingId])
+            ->with('success', 'Evaluación Docente eliminada correctamente.');
     }
 }
