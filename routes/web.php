@@ -74,24 +74,27 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:Administrator'
 Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:Teacher'])->group(function () {
 
     Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
-
     Route::get('/courses', [TeacherController::class, 'courses'])->name('courses');
     Route::get('/courses/{id}', [TeacherController::class, 'show'])->name('courses.show');
-
     Route::get('/students/{id}', [TeacherController::class, 'students'])->name('students');
 
     Route::get('/attendance/create', [TeacherAttendanceController::class, 'create'])->name('attendance.create');
     Route::post('/attendance/store', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
 
-    // Procesamiento de las tareas asignadas mediante modales y revisión de entregas
     Route::post('/tasks/store', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task_id}/submissions', [TaskController::class, 'submissions'])->name('tasks.submissions');
     Route::post('/submissions/{submission_id}/grade', [TaskController::class, 'grade'])->name('submissions.grade');
 
-    Route::resource('assessments', AssessmentController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+    // Rutas de Assessments estandarizadas
+    Route::get('/assessments', [AssessmentController::class, 'index'])->name('assessments.index');
+    Route::post('/assessments', [AssessmentController::class, 'store'])->name('assessments.store');
     
-    // Rutas de Preguntas (Creación y Edición)
-    Route::post('assessments/{assessment}/questions', [AssessmentController::class, 'addQuestion'])->name('assessments.questions.store');
+    // Todas usan {training_id} para acceder al curso y {assessment_id} para la evaluación específica
+    Route::get('/assessments/{training_id}', [AssessmentController::class, 'show'])->name('assessments.show');
+    Route::put('/assessments/{assessment_id}', [AssessmentController::class, 'update'])->name('assessments.update');
+    Route::delete('/assessments/{assessment_id}', [AssessmentController::class, 'destroy'])->name('assessments.destroy');
+    
+    Route::post('assessments/{assessment_id}/questions', [AssessmentController::class, 'addQuestion'])->name('assessments.questions.store');
     Route::put('questions/{question_id}', [AssessmentController::class, 'updateQuestion'])->name('questions.update');
     Route::delete('questions/{question_id}', [AssessmentController::class, 'destroyQuestion'])->name('questions.destroy');
 });

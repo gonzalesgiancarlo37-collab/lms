@@ -239,22 +239,24 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach($training->assessments as $assessment)
-                                                    <tr>
-                                                        <td>{{ $assessment->title }}</td>
-                                                        <td class="text-center">{{ $assessment->start_date ? \Carbon\Carbon::parse($assessment->start_date)->format('d/m/Y') : 'Sin fecha' }}</td>
-                                                        <td class="text-center">{{ $assessment->end_date ? \Carbon\Carbon::parse($assessment->end_date)->format('d/m/Y') : 'Sin fecha' }}</td>
-                                                        <td class="text-center">{{ $assessment->allowed_attempts }}</td>
-                                                        <td class="text-center">
-                                                            <span class="badge @if($assessment->active) bg-success @else bg-secondary @endif">{{ $assessment->active ? 'Activo' : 'Inactivo' }}</span>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <a href="{{ route('teacher.assessments.show', $assessment->assessment_id) }}" class="btn btn-sm btn-info text-white">
-                                                                <i class="bi bi-pencil-square"></i> Gestionar Preguntas
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
+                                                <tbody>
+                                                    @foreach($training->assessments as $assessment)
+                                                        <tr>
+                                                            <td>{{ $assessment->title }}</td>
+                                                            <td class="text-center">{{ $assessment->start_date ? \Carbon\Carbon::parse($assessment->start_date)->format('d/m/Y') : 'Sin fecha' }}</td>
+                                                            <td class="text-center">{{ $assessment->end_date ? \Carbon\Carbon::parse($assessment->end_date)->format('d/m/Y') : 'Sin fecha' }}</td>
+                                                            <td class="text-center">{{ $assessment->allowed_attempts }}</td>
+                                                            <td class="text-center">
+                                                                <span class="badge @if($assessment->active) bg-success @else bg-secondary @endif">{{ $assessment->active ? 'Activo' : 'Inactivo' }}</span>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <a href="{{ route('teacher.assessments.show', ['training_id' => $training->training_id]) }}" class="btn btn-sm btn-info text-white">
+                                                                    <i class="bi bi-pencil-square"></i> Gestionar Preguntas
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
                                             </tbody>
                                         </table>
                                     </div>

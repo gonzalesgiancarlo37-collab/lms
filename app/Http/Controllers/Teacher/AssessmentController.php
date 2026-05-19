@@ -22,17 +22,16 @@ class AssessmentController extends Controller
         return view('teacher.assessments.index', compact('trainings'));
     }
 
-    public function show($id)
+    public function show($training_id)
     {
         $user = auth()->user();
 
-        // Ahora al llamar a 'assessments.attempts.user', Laravel encontrará el método en AssessmentAttempt
         $training = Training::with([
                 'course', 
                 'assessments.questions.alternatives',
                 'assessments.attempts.user'
             ])
-            ->where('training_id', $id)
+            ->where('training_id', $training_id)
             ->where('teacher_id', $user->user_id)
             ->firstOrFail();
 
@@ -83,7 +82,7 @@ class AssessmentController extends Controller
         ]);
 
         $user = auth()->user();
-        $assessment = Assessment::with('questions')->findOrFail($assessment_id);
+        $assessment = Assessment::with('training')->findOrFail($assessment_id);
 
         if ($assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
@@ -111,7 +110,7 @@ class AssessmentController extends Controller
             }
         });
 
-        return redirect()->route('teacher.assessments.show', ['assessment' => $assessment->training_id])
+        return redirect()->route('teacher.assessments.show', ['training_id' => $assessment->training_id])
             ->with('success', 'Pregunta agregada.');
     }
 
@@ -126,7 +125,7 @@ class AssessmentController extends Controller
         ]);
 
         $user = auth()->user();
-        $question = Question::with('assessment.questions')->findOrFail($question_id);
+        $question = Question::with('assessment.training')->findOrFail($question_id);
 
         if ($question->assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
@@ -150,7 +149,7 @@ class AssessmentController extends Controller
             }
         });
 
-        return redirect()->route('teacher.assessments.show', ['assessment' => $question->assessment->training_id])
+        return redirect()->route('teacher.assessments.show', ['training_id' => $question->assessment->training_id])
             ->with('success', 'Pregunta actualizada.');
     }
 
@@ -173,10 +172,10 @@ class AssessmentController extends Controller
             $question->delete();
         });
 
-        return redirect()->route('teacher.assessments.show', ['assessment' => $trainingId]);
+        return redirect()->route('teacher.assessments.show', ['training_id' => $trainingId]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $assessment_id)
     {
         $request->validate([
             'title' => 'required|string|max:150',
@@ -188,7 +187,7 @@ class AssessmentController extends Controller
         ]);
 
         $user = auth()->user();
-        $assessment = Assessment::with('training')->where('assessment_id', $id)->firstOrFail();
+        $assessment = Assessment::with('training')->where('assessment_id', $assessment_id)->firstOrFail();
 
         if ($assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
@@ -199,13 +198,13 @@ class AssessmentController extends Controller
         }
 
         $assessment->update($request->all());
-        return redirect()->route('teacher.assessments.show', ['assessment' => $assessment->training_id]);
+        return redirect()->route('teacher.assessments.show', ['training_id' => $assessment->training_id]);
     }
 
-    public function destroy($id)
+    public function destroy($assessment_id)
     {
         $user = auth()->user();
-        $assessment = Assessment::with('training')->where('assessment_id', $id)->firstOrFail();
+        $assessment = Assessment::with('training')->where('assessment_id', $assessment_id)->firstOrFail();
 
         if ($assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
@@ -218,6 +217,6 @@ class AssessmentController extends Controller
         $trainingId = $assessment->training_id;
         $assessment->delete();
 
-        return redirect()->route('teacher.assessments.show', ['assessment' => $trainingId]);
+        return redirect()->route('teacher.assessments.show', ['training_id' => $trainingId]);
     }
 }
