@@ -7,7 +7,8 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         @php
-                            $totalScore = $attempt->assessment->questions->sum('score') ?: 20; // Fallback a 20 si no hay preguntas
+                            // Se calcula el total usando la relación limpia
+                            $totalScore = $attempt->assessment->questions->sum('score') ?: 20; 
                             $passed = $attempt->score >= ($totalScore / 2);
                         @endphp
 
