@@ -19,6 +19,12 @@ class Assessment extends Model
         'time_limit'
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
+        'active'     => 'boolean',
+    ];
+
     public function training()
     {
         return $this->belongsTo(Training::class, 'training_id', 'training_id');

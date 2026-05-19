@@ -17,6 +17,11 @@ class Enrollment extends Model
         'status'
     ];
 
+    protected $casts = [
+        'enrollment_date' => 'date',
+        'scholarship_percentage' => 'decimal:2',
+    ];
+
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id', 'user_id');
@@ -35,5 +40,10 @@ class Enrollment extends Model
     public function progress()
     {
         return $this->hasMany(Progress::class, 'enrollment_id', 'enrollment_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'enrollment_id', 'enrollment_id');
     }
 }

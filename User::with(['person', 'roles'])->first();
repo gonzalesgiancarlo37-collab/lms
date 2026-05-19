@@ -1,0 +1,14 @@
+[90m= [39m[34;4mApp\Models\Person[39;24m {#8534
+    [34mperson_id[39m: [35m1[39m,
+    [34mlast_names[39m: [32m"[39m[32mGomez Perez[39m[32m"[39m,
+    [34mfirst_names[39m: [32m"[39m[32mJuan Carlos[39m[32m"[39m,
+    [34mdocument_type[39m: [32m"[39m[32mDNI[39m[32m"[39m,
+    [34mdocument_number[39m: [32m"[39m[32m10000001[39m[32m"[39m,
+    [34mphone[39m: [32m"[39m[32m987654321[39m[32m"[39m,
+    [34maddress[39m: [32m"[39m[32mAv. Siempre Viva 123[39m[32m"[39m,
+    [34memail[39m: [32m"[39m[32mjuan.gomez.001@example.com[39m[32m"[39m,
+    [34mgender[39m: [32m"[39m[32mM[39m[32m"[39m,
+    [34mbirth_date[39m: [32m"[39m[32m1990-05-10[39m[32m"[39m,
+    [34mcreated_at[39m: [32m"[39m[32m2026-05-18 16:36:23[39m[32m"[39m,
+    [34mupdated_at[39m: [32m"[39m[32m2026-05-18 16:36:23[39m[32m"[39m,
+  }

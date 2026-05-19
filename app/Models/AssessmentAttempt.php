@@ -17,6 +17,11 @@ class AssessmentAttempt extends Model
         'score',
     ];
 
+    protected $casts = [
+        'date'  => 'date',
+        'score' => 'decimal:2',
+    ];
+
     public function enrollment()
     {
         return $this->belongsTo(Enrollment::class, 'enrollment_id', 'enrollment_id');

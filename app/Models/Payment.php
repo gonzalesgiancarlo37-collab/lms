@@ -17,6 +17,12 @@ class Payment extends Model
         'status'
     ];
 
+    protected $casts = [
+        'date'        => 'date',
+        'installment' => 'decimal:2',
+        'amount'      => 'decimal:2',
+    ];
+
     public function enrollment()
     {
         return $this->belongsTo(Enrollment::class, 'enrollment_id', 'enrollment_id');

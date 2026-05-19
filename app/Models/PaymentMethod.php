@@ -14,6 +14,8 @@ class PaymentMethod extends Model
 
     public function payments()
     {
+        // Primer parámetro: Llave foránea en la tabla payments ('payment_method_id')
+        // Segundo parámetro: Llave primaria en la tabla actual ('method_id')
         return $this->hasMany(Payment::class, 'payment_method_id', 'method_id');
     }
 }
