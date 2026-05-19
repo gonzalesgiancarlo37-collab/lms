@@ -258,7 +258,7 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                @ helix
+                                @else
                                     <div class="card-body text-center text-muted py-4">
                                         <i class="bi bi-inbox h3 d-block text-secondary mb-2"></i>
                                         <p class="mb-0 small">No hay evaluaciones creadas aún para este curso.</p>
@@ -275,10 +275,37 @@
                                 <div class="card-body">
                                     <p class="text-muted small mb-3">Las tareas entregables asignadas se listan a continuación.</p>
                                     <div class="list-group list-group-flush">
-                                        <div class="text-center text-muted py-3 small">
-                                            <i class="bi bi-journal-text h4 d-block text-secondary mb-2"></i> 
-                                            No hay tareas independientes registradas.
-                                        </div>
+                                        @if($training->tasks->count() > 0)
+                                            @foreach($training->tasks as $task)
+                                                <div class="list-group-item px-0 py-3">
+                                                    <div class="d-flex w-100 justify-content-between mb-1">
+                                                        <h6 class="fw-bold text-dark mb-0">{{ $task->title }}</h6>
+                                                    </div>
+                                                    <p class="text-muted small mb-2 text-truncate" style="max-width: 250px;">{{ $task->description }}</p>
+                                                    <small class="text-secondary d-block mb-2">
+                                                        <i class="bi bi-calendar-event me-1"></i>Vence: {{ $task->due_date ? $task->due_date->format('d/m/Y H:i') : 'Sin fecha' }}
+                                                    </small>
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
+                                                        <div>
+                                                            <span class="badge bg-light text-dark border" title="Total de entregas">
+                                                                <i class="bi bi-file-earmark-arrow-up text-primary me-1"></i>{{ $task->submissions->count() }}
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" title="Pendientes de calificar">
+                                                                <i class="bi bi-clock-history me-1"></i>{{ $task->submissions->whereNull('grade')->count() }} por revisar
+                                                            </span>
+                                                        </div>
+                                                        <a href="{{ route('teacher.tasks.submissions', $task->task_id) }}" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size: 0.8rem;">
+                                                            <i class="bi bi-eye"></i> Revisar
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            <div class="text-center text-muted py-3 small">
+                                                <i class="bi bi-journal-text h4 d-block text-secondary mb-2"></i> 
+                                                No hay tareas independientes registradas.
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

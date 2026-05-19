@@ -83,8 +83,10 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:Teacher'])
     Route::get('/attendance/create', [TeacherAttendanceController::class, 'create'])->name('attendance.create');
     Route::post('/attendance/store', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
 
-    // Procesamiento de las tareas asignadas mediante modales
+    // Procesamiento de las tareas asignadas mediante modales y revisión de entregas
     Route::post('/tasks/store', [TaskController::class, 'store'])->name('tasks.store');
+    Route::get('/tasks/{task_id}/submissions', [TaskController::class, 'submissions'])->name('tasks.submissions');
+    Route::post('/submissions/{submission_id}/grade', [TaskController::class, 'grade'])->name('submissions.grade');
 
     Route::resource('assessments', AssessmentController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::post('assessments/{assessment}/questions', [AssessmentController::class, 'addQuestion'])->name('assessments.questions.store');

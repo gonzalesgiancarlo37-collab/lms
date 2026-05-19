@@ -27,4 +27,12 @@ class Task extends Model
     {
         return $this->belongsTo(Training::class, 'training_id', 'training_id');
     }
+
+    /**
+     * Relación directa: Una tarea tiene muchas entregas hechas por los alumnos.
+     */
+    public function submissions()
+    {
+        return $this->hasMany(TaskSubmission::class, 'task_id', 'task_id');
+    }
 }
