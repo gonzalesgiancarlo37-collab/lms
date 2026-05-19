@@ -65,8 +65,8 @@ class AssessmentController extends Controller
             'active' => $request->has('active'),
         ]);
 
-        // CORRECCIÓN: Ahora redirige al curso actual directo a la pestaña de contenidos
-        return redirect()->route('teacher.courses.show', ['course' => $training->training_id, 'tab' => 'contenido'])
+        // CORRECCIÓN: Se cambió 'course' por 'id' para coincidir exactamente con la ruta 'teacher/courses/{id}'
+        return redirect()->route('teacher.courses.show', ['id' => $training->training_id, 'tab' => 'contenido'])
             ->with('success', 'Evaluación creada correctamente.');
     }
 
@@ -107,6 +107,7 @@ class AssessmentController extends Controller
             }
         });
 
+        // NOTA: Se mantiene 'id' ya que apunta a 'teacher.assessments.show' el cual hereda {assessment} del Resource de Laravel
         return redirect()->route('teacher.assessments.show', ['id' => $assessment->training->training_id])
             ->with('success', 'Pregunta agregada correctamente.');
     }

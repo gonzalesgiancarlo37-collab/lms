@@ -84,8 +84,8 @@
             </a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="#">
+        <li class="nav-item {{ request()->routeIs('teacher.assessments.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('teacher.assessments.index') }}">
                 <i class="fas fa-fw fa-clipboard-check"></i>
                 <span>Evaluaciones</span>
             </a>
@@ -105,7 +105,7 @@
 
             <li class="nav-item {{ request()->routeIs('teacher.attendance.*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('teacher.attendance.create', ['training_id' => $currentTrainingId]) }}">
-                    <i class="fas fa-fw fa-clipboard-check"></i>
+                    <i class="fas fa-fw fa-calendar-check"></i>
                     <span>Asistencia</span>
                 </a>
             </li>
@@ -114,13 +114,6 @@
                 <a class="nav-link" href="{{ route('teacher.students', ['id' => $currentTrainingId]) }}">
                     <i class="fas fa-fw fa-users"></i>
                     <span>Estudiantes</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('teacher.tasks.create', $currentTrainingId) }}">
-                    <i class="fas fa-fw fa-plus"></i>
-                    <span>Crear Tarea</span>
                 </a>
             </li>
         @endif

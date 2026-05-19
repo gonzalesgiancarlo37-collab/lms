@@ -67,4 +67,10 @@ class Training extends Model
     {
         return $this->hasMany(Assessment::class, 'training_id', 'training_id');
     }
+
+    // Agrega esta relación si no existe (o cambia el nombre si tu modelo se llama distinto)
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'training_id', 'training_id');
+    }   
 }

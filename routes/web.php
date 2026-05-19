@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\AttendanceController as TeacherAttendanceController;
 use App\Http\Controllers\Teacher\AssessmentController;
-use App\Http\Controllers\Teacher\TaskController; // <-- Confirmado aquí
+use App\Http\Controllers\Teacher\TaskController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
 use App\Http\Controllers\Admin\CourseController;
@@ -83,7 +83,7 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:Teacher'])
     Route::get('/attendance/create', [TeacherAttendanceController::class, 'create'])->name('attendance.create');
     Route::post('/attendance/store', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
 
-    // CORRECCIÓN: Ahora las tareas se gestionan directamente a través de TaskController
+    // Procesamiento de las tareas asignadas mediante modales
     Route::post('/tasks/store', [TaskController::class, 'store'])->name('tasks.store');
 
     Route::resource('assessments', AssessmentController::class)->only(['index', 'show', 'store', 'update', 'destroy']);

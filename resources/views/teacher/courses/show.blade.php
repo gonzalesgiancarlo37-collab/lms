@@ -210,10 +210,10 @@
                             </p>
                         </div>
                         <div class="d-flex gap-2 flex-wrap">
-                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createAssessmentModal">
+                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#createAssessmentModal">
                                 <i class="bi bi-plus-lg me-1"></i>Nueva Evaluación
                             </button>
-                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+                            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#createTaskModal">
                                 <i class="bi bi-plus-lg me-1"></i>Nueva Tarea
                             </button>
                         </div>
@@ -258,7 +258,7 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                @else
+                                @ helix
                                     <div class="card-body text-center text-muted py-4">
                                         <i class="bi bi-inbox h3 d-block text-secondary mb-2"></i>
                                         <p class="mb-0 small">No hay evaluaciones creadas aún para este curso.</p>
@@ -275,7 +275,6 @@
                                 <div class="card-body">
                                     <p class="text-muted small mb-3">Las tareas entregables asignadas se listan a continuación.</p>
                                     <div class="list-group list-group-flush">
-                                        {{-- Aquí puedes añadir el bucle foreach para las tareas cuando esté lista la relación --}}
                                         <div class="text-center text-muted py-3 small">
                                             <i class="bi bi-journal-text h4 d-block text-secondary mb-2"></i> 
                                             No hay tareas independientes registradas.
@@ -301,7 +300,9 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold" id="createAssessmentModalLabel">Nueva Evaluación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <form action="{{ route('teacher.assessments.store') }}" method="POST">
                     @csrf
@@ -340,7 +341,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Crear Evaluación</button>
                     </div>
                 </form>
@@ -353,9 +354,10 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-success" id="createTaskModalLabel">Nueva Tarea Entregable</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-                {{-- Modifica esta ruta 'action' para que apunte al controlador de tus tareas real --}}
                 <form action="{{ route('teacher.tasks.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="training_id" value="{{ $training->training_id }}">
@@ -371,7 +373,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="task-due-date" class="form-label">Fecha Límite</label>
-                                <input type="date" name="due_date" id="task-due-date" class="form-control" required>
+                                <input type="date" name="delivery_date" id="task-due-date" class="form-control" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="task-max-score" class="form-label">Puntaje Máximo</label>
@@ -380,8 +382,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn bg-success text-white">Publicar Tarea</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success text-white">Publicar Tarea</button>
                     </div>
                 </form>
             </div>

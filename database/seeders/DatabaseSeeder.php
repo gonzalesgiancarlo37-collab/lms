@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
 
             // EXAMS TRACKING
             AssessmentAttemptsSeeder::class,
+            TaskSeeder::class,
         ]);
     }
 }

@@ -5,41 +5,42 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Training;
-// Alternativa: Asegúrate de importar tu modelo de Tareas si se llama Task o Homework
-// use App\Models\Task; 
+// Usamos el modelo que corresponda a tus tareas, usualmente Task
+use App\Models\Task; 
 
 class TaskController extends Controller
 {
+    /**
+     * Almacena una nueva tarea asignada desde el modal.
+     */
     public function store(Request $request)
     {
-        // 1. Validamos los datos que vienen desde tu modal de tareas
+        // 1. Validar la petición entrante
         $request->validate([
-            'training_id'   => 'required|exists:trainings,training_id',
-            'title'         => 'required|string|max:150',
-            'description'   => 'nullable|string',
-            'delivery_date' => 'required|date|after_or_equal:today', 
+            'training_id' => 'required|exists:trainings,training_id',
+            'title'       => 'required|string|max:150',
+            'description' => 'nullable|string',
+            'due_date'    => 'required|date|after_or_equal:today',
+            // Agrega aquí más campos si tu formulario de tareas los requiere (ej. puntos, archivos)
         ]);
 
         $user = auth()->user();
 
-        // 2. Seguridad: Verificamos que el curso pertenezca al profesor logueado
+        // 2. Verificar que el curso pertenece al profesor logueado
         $training = Training::where('training_id', $request->training_id)
             ->where('teacher_id', $user->user_id)
             ->firstOrFail();
 
-        // 3. Guardar en la Base de Datos
-        // Descomenta y ajusta esto cuando verifiques cómo se llama tu modelo/tabla de tareas
-        /*
+        // 3. Crear el registro de la tarea
         Task::create([
-            'training_id'   => $training->training_id,
-            'title'         => $request->title,
-            'description'   => $request->description,
-            'delivery_date' => $request->delivery_date,
+            'training_id' => $training->training_id,
+            'title'       => $request->title,
+            'description' => $request->description ?? null,
+            'due_date'    => $request->due_date,
         ]);
-        */
 
-        // 4. Redirección limpia a la pestaña de contenidos del curso
-        return redirect()->route('teacher.courses.show', ['course' => $training->training_id, 'tab' => 'contenido'])
-            ->with('success', 'Tarea publicada correctamente.');
+        // CORRECCIÓN: Se utiliza la clave 'id' para cumplir con {id} de la ruta teacher.courses.show
+        return redirect()->route('teacher.courses.show', ['id' => $training->training_id, 'tab' => 'contenido'])
+            ->with('success', 'Tarea asignada correctamente.');
     }
 }
