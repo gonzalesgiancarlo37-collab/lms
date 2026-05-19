@@ -107,39 +107,6 @@ class TeacherController extends Controller
         return view('teacher.attendance', compact('training', 'students'));
     }
 
-    public function storeAttendance(Request $request)
-    {
-        $request->validate([
-            'schedule_id' => 'required|exists:schedules,schedule_id',
-            'attendances' => 'required|array',
-            'attendances.*.enrollment_id' => 'required|exists:enrollments,enrollment_id',
-            'attendances.*.attendance' => 'required|in:present,absent,late'
-        ]);
-
-        $user = auth()->user();
-
-        $schedule = \App\Models\Schedule::with('training')->findOrFail($request->schedule_id);
-
-        if ($schedule->training->teacher_id !== $user->user_id) {
-            abort(403, 'No autorizado: Este horario no pertenece a tus trainings.');
-        }
-
-        DB::transaction(function () use ($request, $schedule) {
-            foreach ($request->attendances as $attendance) {
-                Attendance::updateOrCreate(
-                    [
-                        'schedule_id' => $request->schedule_id,
-                        'enrollment_id' => $attendance['enrollment_id']
-                    ],
-                    [
-                        'attendance' => $attendance['attendance']
-                    ]
-                );
-            }
-        });
-
-        return redirect()->back()->with('success', 'Asistencia registrada correctamente.');
-    }
 
     public function createTask($training_id)
     {
@@ -183,7 +150,7 @@ class TeacherController extends Controller
             'active' => true,
         ]);
 
-        return redirect()->route('teacher.attendance', $request->training_id)
+        return redirect()->route('teacher.courses.show', $request->training_id)
             ->with('success', 'Tarea creada correctamente.');
     }
 }

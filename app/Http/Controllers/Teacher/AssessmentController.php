@@ -8,6 +8,7 @@ use App\Models\Training;
 use App\Models\Assessment;
 use App\Models\Question;
 use App\Models\Option;
+use Illuminate\Support\Facades\DB;
 
 class AssessmentController extends Controller
 {
@@ -152,17 +153,20 @@ class AssessmentController extends Controller
     {
         $user = auth()->user();
 
+        // Buscamos la evaluación validando que pertenezca al entrenamiento
         $assessment = Assessment::with('training')
             ->where('assessment_id', $id)
             ->firstOrFail();
 
+        // Control de acceso: Validar que el profesor sea el dueño
         if ($assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
         }
 
+        // Integridad de datos: No borrar si ya hay alumnos que rindieron el examen
         if ($assessment->attempts()->exists()) {
             return redirect()->back()->withErrors([
-                'assessment' => 'No se puede modificar una evaluación que ya tiene intentos registrados'
+                'assessment' => 'No se puede eliminar una evaluación que ya tiene intentos registrados.'
             ]);
         }
 

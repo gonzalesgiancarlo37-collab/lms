@@ -102,7 +102,7 @@ class CourseController extends Controller
         $validated = $request->validate([
             'attempt_id' => 'required|integer|exists:assessment_attempts,attempt_id',
             'answers' => 'required|array',
-            'answers.*' => 'nullable|integer|exists:alternatives,option_id',
+            'answers.*' => 'nullable|integer|exists:options,option_id',
         ]);
 
         $attempt = AssessmentAttempt::where('attempt_id', $validated['attempt_id'])
@@ -129,15 +129,14 @@ class CourseController extends Controller
         }
 
         $totalScore = 0;
-        $responses = $validated['answers'] ?? [];
+        $responses = $request->input('answers', []);
 
         foreach ($assessment->questions as $question) {
             $selectedOptionId = $responses[$question->question_id] ?? null;
 
             if ($selectedOptionId) {
-                $selectedOption = $question->options()
-                    ->where('option_id', $selectedOptionId)
-                    ->first();
+                // Buscamos en la relación en memoria sin tocar la base de datos
+                $selectedOption = $question->options->firstWhere('option_id', $selectedOptionId);
 
                 if ($selectedOption && $selectedOption->is_correct) {
                     $totalScore += $question->score;

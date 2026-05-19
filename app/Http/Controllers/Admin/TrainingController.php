@@ -22,8 +22,11 @@ class TrainingController extends Controller
             ->get();
 
         $courses = Course::all();
-        $teachers = User::whereHas('roles', fn($q) => $q->where('name', 'Teacher'))->get();
-        $students = User::whereHas('roles', fn($q) => $q->where('name', 'Student'))->with('person')->get();
+        $teachers = User::whereHas('roles', fn($q) => $q->where('name', 'Teacher'))->with('person')->get();
+        // NOTA: Si usas la inscripción masiva en un modal searchable, quita la carga masiva de $students de aquí
+        // y manéjala mediante una petición AJAX/API paginada para proteger la memoria RAM.
+        // Cargamos solo un subconjunto por defecto para evitar OOM en entornos con muchos estudiantes.
+        $students = User::whereHas('roles', fn($q) => $q->where('name', 'Student'))->with('person')->take(100)->get();
 
         return view('admin.trainings.index', compact('trainings', 'courses', 'teachers', 'students'));
     }
@@ -48,6 +51,9 @@ class TrainingController extends Controller
             'teacher_id' => 'required|exists:users,user_id',
             'modality' => 'required|in:virtual,presential,hybrid',
             'price' => 'required|numeric|min:0.01',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'schedule' => 'required|string|max:100',
         ]);
 
         Training::create([
@@ -56,11 +62,15 @@ class TrainingController extends Controller
             'administrator_id' => auth()->id(),
             'modality' => $request->modality,
             'price' => $request->price,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'schedule' => $request->schedule,
             'creation_date' => now()->toDateString(),
             'status' => 'A',
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Capacitación creada correctamente']);
+        return redirect()->route('admin.trainings.index')
+            ->with('success', 'Capacitación programada con éxito.');
     }
 
     /**
@@ -123,11 +133,11 @@ class TrainingController extends Controller
         ]);
 
         // Check if already enrolled
-        $exists = Enrollment::where('training_id', $training->training_id)
+        $alreadyEnrolled = Enrollment::where('training_id', $training->training_id)
                             ->where('student_id', $request->student_id)
                             ->exists();
 
-        if ($exists) {
+        if ($alreadyEnrolled) {
             return response()->json(['success' => false, 'message' => 'El alumno ya está inscrito en este curso.']);
         }
 

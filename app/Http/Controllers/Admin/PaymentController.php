@@ -92,7 +92,12 @@ class PaymentController extends Controller
     public function edit($id)
     {
         $payment = Payment::findOrFail($id);
-        $enrollments = Enrollment::with(['student.person', 'training.course'])->get();
+        // Evitamos traer todo el universo de matrículas históricas: solo activas o la matrícula asociada al pago
+        $enrollments = Enrollment::with(['student.person', 'training.course'])
+            ->where('status', 'A')
+            ->orWhere('enrollment_id', $payment->enrollment_id)
+            ->get();
+
         $paymentMethods = PaymentMethod::all();
 
         return view('admin.payments.edit', compact('payment', 'enrollments', 'paymentMethods'));

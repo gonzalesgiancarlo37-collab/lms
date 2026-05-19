@@ -14,6 +14,9 @@ class Training extends Model
         'administrator_id',
         'modality',
         'price',
+        'start_date',
+        'end_date',
+        'schedule',
         'creation_date',
         'status'
     ];

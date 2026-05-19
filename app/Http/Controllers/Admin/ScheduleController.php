@@ -45,6 +45,27 @@ class ScheduleController extends Controller
             'end_time' => 'required|date_format:H:i|after:start_time',
         ]);
 
+        // Obtener el profesor asignado a la capacitación actual
+        $training = Training::findOrFail($request->training_id);
+        $teacherId = $training->teacher_id;
+
+        // Verificar si el profesor ya tiene un compromiso que se cruce en esa fecha y rango horario
+        $overlap = Schedule::where('date', $request->date)
+            ->whereHas('training', function ($query) use ($teacherId) {
+                $query->where('teacher_id', $teacherId);
+            })
+            ->where(function ($query) use ($request) {
+                $query->where('start_time', '<', $request->end_time)
+                      ->where('end_time', '>', $request->start_time);
+            })
+            ->exists();
+
+        if ($overlap) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['start_time' => 'El profesor asignado ya tiene otra capacitación programada que se cruza en este rango de horario.']);
+        }
+
         Schedule::create([
             'training_id' => $request->training_id,
             'date' => $request->date,
@@ -78,6 +99,28 @@ class ScheduleController extends Controller
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
         ]);
+
+        // Obtener el profesor asignado a la capacitación actual
+        $training = Training::findOrFail($request->training_id);
+        $teacherId = $training->teacher_id;
+
+        // Verificar si el profesor ya tiene otro compromiso que se cruce en esa fecha y rango horario
+        $overlap = Schedule::where('schedule_id', '!=', $id)
+            ->where('date', $request->date)
+            ->whereHas('training', function ($query) use ($teacherId) {
+                $query->where('teacher_id', $teacherId);
+            })
+            ->where(function ($query) use ($request) {
+                $query->where('start_time', '<', $request->end_time)
+                      ->where('end_time', '>', $request->start_time);
+            })
+            ->exists();
+
+        if ($overlap) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['start_time' => 'El profesor asignado ya tiene otra capacitación programada que se cruza en este rango de horario.']);
+        }
 
         $schedule = Schedule::findOrFail($id);
 

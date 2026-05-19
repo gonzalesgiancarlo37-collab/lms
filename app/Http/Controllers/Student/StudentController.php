@@ -12,15 +12,18 @@ class StudentController extends Controller
     {
         $studentId = Auth::user()->user_id;
 
+        // Eager loading completo incluyendo .person para evitar queries ocultas en las vistas
         $enrollments = Enrollment::with([
             'training.course',
-            'training.teacher'
+            'training.teacher.person'
         ])
             ->where('student_id', $studentId)
             ->get();
 
         $totalCourses = $enrollments->count();
-        $completed = 0;
+        
+        // Dinamizamos las métricas leyendo los estados reales ('C' de Completed, 'A' de Active)
+        $completed = $enrollments->where('status', 'C')->count();
         $inProgress = $enrollments->where('status', 'A')->count();
 
         return view('student.dashboard', compact(
@@ -35,32 +38,25 @@ class StudentController extends Controller
     {
         $studentId = Auth::user()->user_id;
 
-        // Obtener todos los cursos matriculados del estudiante
-        $courses = \App\Models\Course::with(['trainings.enrollments', 'trainings.teacher'])
-            ->whereHas('trainings.enrollments', function ($query) use ($studentId) {
-                $query->where('student_id', $studentId);
-            })
+        // Cambiamos el enfoque: Partimos desde Enrollment para resolver todo en 1 sola query limpia
+        $enrollments = Enrollment::with([
+            'training.course',
+            'training.teacher.person',
+            'progress' // Cargamos la relación de progreso si existe
+        ])
+            ->where('student_id', $studentId)
             ->get()
-            ->map(function ($course) use ($studentId) {
-                // Calcular progreso por curso
-                $enrollments = Enrollment::where('student_id', $studentId)
-                    ->whereHas('training', function ($query) use ($course) {
-                    $query->where('course_id', $course->course_id);
-                })
-                    ->get();
+            ->map(function ($enrollment) {
+                // El progreso se calcula de forma segura basándose en el estado o en tu tabla de progreso
+                // Si usas tu lógica de estado 'C' (Completado) a nivel de inscripción:
+                $enrollment->progress_percentage = $enrollment->status === 'C' ? 100 : 0;
 
-                $totalEnrollments = $enrollments->count();
-                $completedEnrollments = $enrollments->where('status', 'C')->count();
-                $course->progress_percentage = $totalEnrollments > 0
-                    ? round(($completedEnrollments / $totalEnrollments) * 100)
-                    : 0;
-
-                // Obtener el primer instructor del curso
-                $course->teacher = $course->trainings->first()?->teacher;
-
-                return $course;
+                // Nota: Si en el futuro calculas el progreso por tareas completadas, 
+                // podrás hacerlo aquí usando la relación $enrollment->progress sin romper la vista.
+                
+                return $enrollment;
             });
 
-        return view('student.courses.index', compact('courses'));
+        return view('student.courses.index', compact('enrollments'));
     }
 }

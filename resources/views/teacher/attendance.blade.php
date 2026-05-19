@@ -16,10 +16,16 @@
                     @csrf
                     <input type="hidden" name="training_id" value="{{ $training->training_id }}">
 
-                    <div class="mb-3">
-                        <button type="button" class="btn btn-success" onclick="markAllPresent()">
-                            Marcar Todos como Asistidos
-                        </button>
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-4">
+                            <label for="attendance_date" class="form-label fw-bold small text-muted">Fecha de Asistencia</label>
+                            <input type="date" id="attendance_date" name="date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                        <div class="col-md-8 text-md-end mt-3 mt-md-0">
+                            <button type="button" class="btn btn-outline-success" onclick="markAllPresent()">
+                                <i class="bi bi-check2-all me-1"></i> Marcar Todos como Presentes
+                            </button>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -27,9 +33,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="text-dark small fw-bold">Estudiante</th>
-                                    <th class="text-dark small fw-bold text-center">Presente</th>
-                                    <th class="text-dark small fw-bold text-center">Ausente</th>
-                                    <th class="text-dark small fw-bold text-center">Justificado</th>
+                                    <th class="text-dark small fw-bold text-center"><span class="text-success">✓ Presente</span></th>
+                                    <th class="text-dark small fw-bold text-center"><span class="text-danger">✕ Ausente</span></th>
+                                    <th class="text-dark small fw-bold text-center"><span class="text-warning">⊘ Justificado</span></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -43,15 +49,15 @@
                                         </td>
                                         <td class="align-middle text-center">
                                             <input type="radio" name="attendances[{{ $loop->index }}][status]" value="P"
-                                                checked>
+                                                class="form-check-input" checked>
                                             <input type="hidden" name="attendances[{{ $loop->index }}][student_id]"
                                                 value="{{ $enrollment->student_id }}">
                                         </td>
                                         <td class="align-middle text-center">
-                                            <input type="radio" name="attendances[{{ $loop->index }}][status]" value="A">
+                                            <input type="radio" name="attendances[{{ $loop->index }}][status]" value="A" class="form-check-input">
                                         </td>
                                         <td class="align-middle text-center">
-                                            <input type="radio" name="attendances[{{ $loop->index }}][status]" value="J">
+                                            <input type="radio" name="attendances[{{ $loop->index }}][status]" value="J" class="form-check-input">
                                         </td>
                                     </tr>
                                 @endforeach

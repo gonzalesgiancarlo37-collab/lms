@@ -53,54 +53,48 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Store attendance records for a specific schedule.
+     * Store attendance records for a specific training and date.
      * 
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
-        // Validate schedule_id and attendance array
+        // Validate training_id, date and attendance array
         $request->validate([
-            'schedule_id' => 'required|exists:schedules,schedule_id',
+            'training_id' => 'required|exists:trainings,training_id',
+            'date' => 'required|date',
             'attendances' => 'required|array',
-            'attendances.*.enrollment_id' => 'required|exists:enrollments,enrollment_id',
-            'attendances.*.attendance' => 'required|in:present,absent,late',
+            'attendances.*.student_id' => 'required|exists:users,user_id',
+            'attendances.*.status' => 'required|in:P,A,J',
         ]);
 
-        // Get the schedule and verify ownership
-        $schedule = Schedule::with('training')
-            ->findOrFail($request->schedule_id);
+        // Get the training and verify ownership
+        $training = \App\Models\Training::findOrFail($request->training_id);
 
-        if ($schedule->training->teacher_id !== auth()->user()->user_id) {
-            abort(403, 'No tienes permiso para registrar asistencias en este horario.');
+        if ($training->teacher_id !== auth()->user()->user_id) {
+            abort(403, 'No tienes permiso para registrar asistencias en esta capacitación.');
         }
 
         // Use transaction for atomic operations
-        DB::transaction(function () use ($request, $schedule) {
+        DB::transaction(function () use ($request, $training) {
             foreach ($request->attendances as $attendanceData) {
-                // Verify the enrollment belongs to this training
-                $enrollment = Enrollment::findOrFail($attendanceData['enrollment_id']);
-                
-                if ($enrollment->training_id !== $schedule->training->training_id) {
-                    throw new \Exception('El estudiante no está inscrito en este entrenamiento.');
-                }
-
                 // Update or create attendance record
                 Attendance::updateOrCreate(
                     [
-                        'schedule_id' => $schedule->schedule_id,
-                        'enrollment_id' => $attendanceData['enrollment_id'],
+                        'training_id' => $training->training_id,
+                        'student_id' => $attendanceData['student_id'],
+                        'date' => $request->date,
                     ],
                     [
-                        'attendance' => $attendanceData['attendance'],
+                        'status' => $attendanceData['status'],
                     ]
                 );
             }
         });
 
         return redirect()
-            ->route('teacher.schedules.show', ['schedule' => $schedule->schedule_id])
-            ->with('success', 'Asistencias registradas correctamente.');
+            ->route('teacher.courses')
+            ->with('success', 'Asistencias guardadas correctamente para la fecha ' . $request->date);
     }
 }
