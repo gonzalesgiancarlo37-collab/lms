@@ -93,6 +93,7 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:Teacher'])
     // Rutas de Preguntas (Creación y Edición)
     Route::post('assessments/{assessment}/questions', [AssessmentController::class, 'addQuestion'])->name('assessments.questions.store');
     Route::put('questions/{question_id}', [AssessmentController::class, 'updateQuestion'])->name('questions.update');
+    Route::delete('questions/{question_id}', [AssessmentController::class, 'destroyQuestion'])->name('questions.destroy');
 });
 
 /*

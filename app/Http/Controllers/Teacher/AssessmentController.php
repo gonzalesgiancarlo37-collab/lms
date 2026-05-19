@@ -15,7 +15,6 @@ class AssessmentController extends Controller
     public function index()
     {
         $user = auth()->user();
-
         $trainings = Training::with('course')
             ->where('teacher_id', $user->user_id)
             ->get();
@@ -27,7 +26,12 @@ class AssessmentController extends Controller
     {
         $user = auth()->user();
 
-        $training = Training::with(['course', 'assessments.questions.alternatives'])
+        // Ahora al llamar a 'assessments.attempts.user', Laravel encontrará el método en AssessmentAttempt
+        $training = Training::with([
+                'course', 
+                'assessments.questions.alternatives',
+                'assessments.attempts.user'
+            ])
             ->where('training_id', $id)
             ->where('teacher_id', $user->user_id)
             ->firstOrFail();
@@ -49,7 +53,6 @@ class AssessmentController extends Controller
         ]);
 
         $user = auth()->user();
-
         $training = Training::where('training_id', $request->training_id)
             ->where('teacher_id', $user->user_id)
             ->firstOrFail();
@@ -80,13 +83,15 @@ class AssessmentController extends Controller
         ]);
 
         $user = auth()->user();
-
-        $assessment = Assessment::with('training')
-            ->where('assessment_id', $assessment_id)
-            ->firstOrFail();
+        $assessment = Assessment::with('questions')->findOrFail($assessment_id);
 
         if ($assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
+        }
+
+        $currentTotal = $assessment->questions->sum('score');
+        if (($currentTotal + $request->score) > 20) {
+            return redirect()->back()->withInput()->with('error', 'Límite de 20 puntos excedido.');
         }
 
         DB::transaction(function () use ($request, $assessment) {
@@ -106,9 +111,8 @@ class AssessmentController extends Controller
             }
         });
 
-        // CORRECCIÓN: Redirección corregida usando el parámetro nativo 'assessment' de la ruta del recurso
-        return redirect()->route('teacher.assessments.show', ['assessment' => $assessment->training->training_id])
-            ->with('success', 'Pregunta agregada correctamente.');
+        return redirect()->route('teacher.assessments.show', ['assessment' => $assessment->training_id])
+            ->with('success', 'Pregunta agregada.');
     }
 
     public function updateQuestion(Request $request, $question_id)
@@ -122,25 +126,21 @@ class AssessmentController extends Controller
         ]);
 
         $user = auth()->user();
-
-        // Obtener pregunta con su evaluación y capacitación para comprobar permisos
-        $question = Question::with('assessment.training')->findOrFail($question_id);
+        $question = Question::with('assessment.questions')->findOrFail($question_id);
 
         if ($question->assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
         }
 
-        DB::transaction(function () use ($request, $question) {
-            // Actualizar pregunta
-            $question->update([
-                'question_text' => $request->question_text,
-                'score' => $request->score,
-            ]);
+        $currentTotal = $question->assessment->questions->where('question_id', '!=', $question_id)->sum('score');
+        if (($currentTotal + $request->score) > 20) {
+            return redirect()->back()->withInput()->with('error', 'Límite excedido.');
+        }
 
-            // Eliminar alternativas anteriores de forma limpia
+        DB::transaction(function () use ($request, $question) {
+            $question->update(['question_text' => $request->question_text, 'score' => $request->score]);
             $question->alternatives()->delete();
 
-            // Insertar el set nuevo de alternativas modificado
             foreach ($request->alternatives as $index => $alternativeData) {
                 Alternative::create([
                     'question_id' => $question->question_id,
@@ -150,15 +150,36 @@ class AssessmentController extends Controller
             }
         });
 
-        return redirect()->route('teacher.assessments.show', ['assessment' => $question->assessment->training->training_id])
-            ->with('success', 'Pregunta actualizada correctamente.');
+        return redirect()->route('teacher.assessments.show', ['assessment' => $question->assessment->training_id])
+            ->with('success', 'Pregunta actualizada.');
+    }
+
+    public function destroyQuestion($question_id)
+    {
+        $user = auth()->user();
+        $question = Question::with('assessment.training')->findOrFail($question_id);
+
+        if ($question->assessment->training->teacher_id !== $user->user_id) {
+            abort(403, 'No autorizado.');
+        }
+
+        if ($question->assessment->attempts()->exists()) {
+            return redirect()->back()->with('error', 'La evaluación ya tiene intentos.');
+        }
+
+        $trainingId = $question->assessment->training_id;
+        DB::transaction(function () use ($question) {
+            $question->alternatives()->delete();
+            $question->delete();
+        });
+
+        return redirect()->route('teacher.assessments.show', ['assessment' => $trainingId]);
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
             'title' => 'required|string|max:150',
-            'description' => 'nullable|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'allowed_attempts' => 'required|integer|min:1',
@@ -167,57 +188,36 @@ class AssessmentController extends Controller
         ]);
 
         $user = auth()->user();
-
-        $assessment = Assessment::with('training')
-            ->where('assessment_id', $id)
-            ->firstOrFail();
+        $assessment = Assessment::with('training')->where('assessment_id', $id)->firstOrFail();
 
         if ($assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
         }
 
         if ($assessment->attempts()->exists()) {
-            return redirect()->back()->withErrors([
-                'assessment' => 'No se puede modificar una evaluación que ya tiene intentos registrados'
-            ]);
+            return redirect()->back()->withErrors(['assessment' => 'No se puede modificar.']);
         }
 
-        $assessment->update([
-            'title' => $request->title,
-            'description' => $request->description ?? null,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'time_limit' => ($request->time_limit && $request->time_limit > 0) ? $request->time_limit : ($assessment->time_limit > 0 ? $assessment->time_limit : 60),
-            'allowed_attempts' => $request->allowed_attempts,
-            'active' => $request->has('active'),
-        ]);
-
-        return redirect()->route('teacher.assessments.show', ['assessment' => $assessment->training->training_id])
-            ->with('success', 'Evaluación actualizada correctamente.');
+        $assessment->update($request->all());
+        return redirect()->route('teacher.assessments.show', ['assessment' => $assessment->training_id]);
     }
 
     public function destroy($id)
     {
         $user = auth()->user();
-
-        $assessment = Assessment::with('training')
-            ->where('assessment_id', $id)
-            ->firstOrFail();
+        $assessment = Assessment::with('training')->where('assessment_id', $id)->firstOrFail();
 
         if ($assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
         }
 
         if ($assessment->attempts()->exists()) {
-            return redirect()->back()->withErrors([
-                'assessment' => 'No se puede eliminar una evaluación que ya tiene intentos registrados.'
-            ]);
+            return redirect()->back()->withErrors(['assessment' => 'No se puede eliminar.']);
         }
 
-        $trainingId = $assessment->training->training_id;
+        $trainingId = $assessment->training_id;
         $assessment->delete();
 
-        return redirect()->route('teacher.assessments.show', ['assessment' => $trainingId])
-            ->with('success', 'Evaluación Docente eliminada correctamente.');
+        return redirect()->route('teacher.assessments.show', ['assessment' => $trainingId]);
     }
 }

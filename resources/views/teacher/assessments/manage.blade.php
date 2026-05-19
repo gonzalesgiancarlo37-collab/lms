@@ -7,12 +7,20 @@
                 <h1 class="h3 mb-2 text-gray-800">Evaluaciones de {{ $training->course->title }}</h1>
                 <p class="text-muted">Gestiona las evaluaciones del curso y crea preguntas para cada evaluación.</p>
             </div>
-            {{-- Botón de "Nueva Evaluación" removido de este apartado --}}
         </div>
 
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -78,19 +86,75 @@
                                 </div>
                             </div>
 
+                            <hr class="my-3">
+
+                            {{-- SECCIÓN DE REPORTE DE NOTAS DE ALUMNOS (CORREGIDA) --}}
+                            <div class="mb-4">
+                                <button class="btn btn-sm btn-block btn-light text-left border d-flex justify-content-between align-items-center" type="button" data-toggle="collapse" data-target="#reportScore-{{ $assessment->assessment_id }}" aria-expanded="false" aria-controls="reportScore-{{ $assessment->assessment_id }}">
+                                    <span class="font-weight-bold text-gray-700"><i class="fas fa-chart-bar mr-2 text-info"></i> Reporte de Alumnos Evaluados</span>
+                                    <i class="fas fa-chevron-down text-muted"></i>
+                                </button>
+                                
+                                <div class="collapse mt-2" id="reportScore-{{ $assessment->assessment_id }}">
+                                    <div class="card card-body p-2 bg-white shadow-sm">
+                                        {{-- Usamos la relación correcta: attempts --}}
+                                        @if($assessment->attempts && $assessment->attempts->count())
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-hover mb-0 text-dark small">
+                                                    <thead class="bg-light">
+                                                        <tr>
+                                                            <th>Alumno</th>
+                                                            <th class="text-center">Fecha de Envío</th>
+                                                            <th class="text-right">Calificación</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($assessment->attempts as $attempt)
+                                                            <tr>
+                                                                <td class="font-weight-bold">{{ $attempt->user->name ?? 'Estudiante' }}</td>
+                                                                <td class="text-center">{{ $attempt->created_at ? $attempt->created_at->format('d/m/Y H:i') : 'N/A' }}</td>
+                                                                <td class="text-right font-weight-bold text-{{ $attempt->score >= 11 ? 'success' : 'danger' }}">
+                                                                    {{ $attempt->score }} / 20
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        @else
+                                            <div class="text-muted text-center p-3 small">
+                                                <i class="fas fa-info-circle mr-1"></i> Ningún alumno ha rendido esta evaluación todavía.
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- INDICADOR DE PUNTAJE MÁXIMO / ACUMULADO --}}
+                            @php
+                                $totalScore = $assessment->questions->sum('score');
+                                $targetScore = 20; 
+                            @endphp
+
                             @if($assessment->questions->count())
                                 <div class="mb-3">
-                                    <h6 class="text-uppercase text-secondary font-weight-bold small mb-3">Preguntas</h6>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="text-uppercase text-secondary font-weight-bold small m-0">Preguntas Asignadas</h6>
+                                        <span class="badge badge-{{ $totalScore == $targetScore ? 'success' : ($totalScore > $targetScore ? 'danger' : 'warning') }} p-2">
+                                            Puntaje total configurado: <strong>{{ $totalScore }} / {{ $targetScore }} pts</strong>
+                                        </span>
+                                    </div>
+
                                     @foreach($assessment->questions as $question)
                                         <div class="card bg-light mb-3">
                                             <div class="card-body p-3">
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <div class="font-weight-bold text-gray-800">{{ $question->question_text }}</div>
-                                                    <div>
+                                                    <div class="d-flex align-items-center">
                                                         <span class="badge badge-secondary p-2 mr-2">{{ $question->score }} pts</span>
                                                         
                                                         {{-- Botón para Editar Pregunta --}}
-                                                        <button class="btn btn-sm btn-light text-primary edit-question-btn" type="button"
+                                                        <button class="btn btn-sm btn-light text-primary edit-question-btn mr-1" type="button"
                                                             data-toggle="modal"
                                                             data-target="#questionModal"
                                                             data-mode="edit"
@@ -104,6 +168,15 @@
                                                             ]) }}">
                                                             <i class="fas fa-edit"></i>
                                                         </button>
+
+                                                        {{-- BOTÓN PARA ELIMINAR PREGUNTA --}}
+                                                        <form action="{{ route('teacher.questions.destroy', $question->question_id) }}" method="POST" onsubmit="return confirm('¿Estás completamente seguro de eliminar esta pregunta? Esta acción no se puede deshacer.');" class="d-inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-light text-danger" title="Eliminar Pregunta">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        </form>
                                                     </div>
                                                 </div>
                                                 <div class="list-group list-group-flush bg-transparent">
@@ -144,6 +217,7 @@
         </div>
     </div>
 
+    {{-- MODAL DE CREACIÓN / EDICIÓN --}}
     <div class="modal fade" id="questionModal" tabindex="-1" aria-labelledby="questionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -193,7 +267,6 @@
                 const addAlternativeBtn = document.getElementById('addAlternativeBtn');
                 let alternativeIndex = 0;
 
-                // Reparación de los strings utilizando concatenación tradicional para evitar que Blade rompa los nombres
                 function createAlternativeRow(index, textValue = '', isChecked = false) {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'd-flex align-items-center mb-2 alternative-row';
