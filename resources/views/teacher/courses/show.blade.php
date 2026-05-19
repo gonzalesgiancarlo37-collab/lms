@@ -2,7 +2,6 @@
 
 @section('content')
     <div class="container-fluid px-4 py-1">
-        <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="h3 mb-2 text-gray-800">{{ $training->course->title }}</h1>
@@ -14,7 +13,6 @@
             </a>
         </div>
 
-        <!-- Statistics Row -->
         <div class="row g-3 mb-4">
             <div class="col-md-3">
                 <div class="card shadow-sm border-0">
@@ -53,9 +51,7 @@
             </div>
         </div>
 
-        <!-- Main Card with Tabs -->
         <div class="card shadow mb-4">
-            <!-- Nav Tabs -->
             <div class="card-header bg-white border-bottom">
                 <ul class="nav nav-tabs card-header-tabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -96,12 +92,9 @@
                 </ul>
             </div>
 
-            <!-- Tab Content -->
             <div class="card-body">
 
-                <!-- Inicio / Dashboard -->
                 @if(request('tab', 'inicio') === 'inicio')
-                    <!-- Quick Actions -->
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
                             <a href="{{ route('teacher.attendance.create', ['training_id' => $training->training_id]) }}" class="text-decoration-none">
@@ -118,21 +111,21 @@
                         </div>
 
                         <div class="col-12 col-md-6">
-                            <a href="{{ route('teacher.tasks.create', $training->training_id) }}" class="text-decoration-none">
+                            <a href="{{ route('teacher.courses.show', $training->training_id) }}?tab=contenido" class="text-decoration-none">
                                 <div class="card border-start border-success border-3 shadow-sm h-100"
                                     style="cursor: pointer; transition: box-shadow 0.3s;">
                                     <div class="card-body">
                                         <h5 class="card-title fw-bold text-dark mb-2">
-                                            <i class="bi bi-plus-circle text-success me-2"></i>Crear Tarea
+                                            <i class="bi bi-plus-circle text-success me-2"></i>Crear Tarea o Evaluación
                                         </h5>
-                                        <p class="card-text text-muted small">Asigna una nueva tarea o evaluación</p>
+                                        <p class="card-text text-muted small">Asigna una nueva tarea o evaluación en la pestaña de contenidos</p>
                                     </div>
                                 </div>
                             </a>
                         </div>
 
                         <div class="col-12 col-md-6">
-                            <a href="{{ route('teacher.students', $training->training_id) }}" class="text-decoration-none">
+                            <a href="{{ route('teacher.courses.show', $training->training_id) }}?tab=estudiantes" class="text-decoration-none">
                                 <div class="card border-start border-info border-3 shadow-sm h-100"
                                     style="cursor: pointer; transition: box-shadow 0.3s;">
                                     <div class="card-body">
@@ -162,7 +155,6 @@
                         </div>
                     </div>
 
-                    <!-- Estudiantes -->
                 @elseif(request('tab') === 'estudiantes')
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-dark mb-0">Estudiantes Matriculados <span
@@ -199,7 +191,6 @@
                         </div>
                     @endif
 
-                    <!-- Asistencias -->
                 @elseif(request('tab') === 'asistencias')
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-dark mb-0">Registro de Asistencias</h5>
@@ -209,7 +200,6 @@
                     </div>
                     <p class="text-muted">Total de registros: <strong>{{ $totalAttendanceRecords }}</strong></p>
 
-                    <!-- Contenido/Tareas -->
                 @elseif(request('tab') === 'contenido')
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
                         <div>
@@ -220,22 +210,22 @@
                             </p>
                         </div>
                         <div class="d-flex gap-2 flex-wrap">
-                            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#createAssessmentModal" data-bs-toggle="modal" data-bs-target="#createAssessmentModal">
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createAssessmentModal">
                                 <i class="bi bi-plus-lg me-1"></i>Nueva Evaluación
                             </button>
-                            <a href="{{ route('teacher.tasks.create', $training->training_id) }}" class="btn btn-sm btn-success">
+                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createTaskModal">
                                 <i class="bi bi-plus-lg me-1"></i>Nueva Tarea
-                            </a>
+                            </button>
                         </div>
                     </div>
 
-                    @if($training->assessments->count() > 0)
-                        <div class="row g-3 mb-4">
-                            <div class="col-lg-8">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-light py-3">
-                                        <h6 class="mb-0 fw-bold">Evaluaciones creadas</h6>
-                                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-lg-8">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-light py-3">
+                                    <h6 class="mb-0 fw-bold">Evaluaciones creadas</h6>
+                                </div>
+                                @if($training->assessments->count() > 0)
                                     <div class="table-responsive">
                                         <table class="table table-hover mb-0">
                                             <thead class="table-light">
@@ -259,7 +249,7 @@
                                                             <span class="badge @if($assessment->active) bg-success @else bg-secondary @endif">{{ $assessment->active ? 'Activo' : 'Inactivo' }}</span>
                                                         </td>
                                                         <td class="text-end">
-                                                            <a href="{{ route('teacher.assessments.show', $assessment->assessment_id) }}" class="btn btn-sm btn-info">
+                                                            <a href="{{ route('teacher.assessments.show', $assessment->assessment_id) }}" class="btn btn-sm btn-info text-white">
                                                                 <i class="bi bi-pencil-square"></i> Gestionar Preguntas
                                                             </a>
                                                         </td>
@@ -268,43 +258,36 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-4">
-                                <div class="card shadow-sm border-0 h-100">
-                                    <div class="card-header bg-light py-3">
-                                        <h6 class="mb-0 fw-bold">Tareas existentes</h6>
+                                @else
+                                    <div class="card-body text-center text-muted py-4">
+                                        <i class="bi bi-inbox h3 d-block text-secondary mb-2"></i>
+                                        <p class="mb-0 small">No hay evaluaciones creadas aún para este curso.</p>
                                     </div>
-                                    <div class="card-body">
-                                        <p class="text-muted small mb-3">Las tareas creadas para este curso se muestran aquí.</p>
-                                        <div class="list-group list-group-flush">
-                                            @foreach($training->assessments as $assessment)
-                                                <div class="list-group-item px-0 border-0">
-                                                    <div class="d-flex justify-content-between align-items-start">
-                                                        <div>
-                                                            <div class="fw-semibold">{{ $assessment->title }}</div>
-                                                            <small class="text-muted">{{ $assessment->start_date ? \Carbon\Carbon::parse($assessment->start_date)->format('d/m/Y') : 'Sin fecha' }} — {{ $assessment->end_date ? \Carbon\Carbon::parse($assessment->end_date)->format('d/m/Y') : 'Sin fecha' }}</small>
-                                                        </div>
-                                                        <span class="badge @if($assessment->active) bg-success @else bg-secondary @endif">{{ $assessment->active ? 'Activo' : 'Inactivo' }}</span>
-                                                    </div>
-                                                </div>
-                                            @endforeach
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-header bg-light py-3">
+                                    <h6 class="mb-0 fw-bold">Tareas existentes</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small mb-3">Las tareas entregables asignadas se listan a continuación.</p>
+                                    <div class="list-group list-group-flush">
+                                        {{-- Aquí puedes añadir el bucle foreach para las tareas cuando esté lista la relación --}}
+                                        <div class="text-center text-muted py-3 small">
+                                            <i class="bi bi-journal-text h4 d-block text-secondary mb-2"></i> 
+                                            No hay tareas independientes registradas.
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    @else
-                        <div class="alert alert-info text-center mb-0" role="alert">
-                            <i class="bi bi-inbox me-2"></i>No hay tareas ni evaluaciones creadas aún.
-                        </div>
-                    @endif
+                    </div>
 
-                    <!-- Calificaciones -->
                 @elseif(request('tab') === 'calificaciones')
                     <h5 class="fw-bold text-dark mb-3">Calificaciones</h5>
-
                     <div class="alert alert-warning text-center mb-0" role="alert">
                         <i class="bi bi-exclamation-triangle me-2"></i>El módulo de calificaciones estará disponible pronto.
                     </div>
@@ -313,29 +296,26 @@
         </div>
     </div>
 
-    <!-- Modal: Crear Evaluación -->
-    <div class="modal fade" id="createAssessmentModal" tabindex="-1" role="dialog" aria-labelledby="createAssessmentModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal fade" id="createAssessmentModal" tabindex="-1" aria-labelledby="createAssessmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createAssessmentModalLabel">Nueva Evaluación</h5>
-                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Cerrar">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title fw-bold" id="createAssessmentModalLabel">Nueva Evaluación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <form action="{{ route('teacher.assessments.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="training_id" value="{{ $training->training_id }}">
                     <div class="modal-body">
-                        <div class="form-group">
-                            <label for="assessment-title" class="form-label">Título</label>
-                            <input type="text" name="title" id="assessment-title" class="form-control" required>
+                        <div class="form-group mb-3">
+                            <label for="assessment-title" class="form-label fw-bold">Título</label>
+                            <input type="text" name="title" id="assessment-title" class="form-control" required placeholder="Ej. Examen Parcial I">
                         </div>
-                        <div class="form-group mt-3">
+                        <div class="form-group mb-3">
                             <label for="assessment-description" class="form-label">Descripción</label>
-                            <textarea name="description" id="assessment-description" class="form-control" rows="3"></textarea>
+                            <textarea name="description" id="assessment-description" class="form-control" rows="3" placeholder="Instrucciones breves..."></textarea>
                         </div>
-                        <div class="row mt-3">
+                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="assessment-start-date" class="form-label">Fecha de inicio</label>
                                 <input type="date" name="start_date" id="assessment-start-date" class="form-control" required>
@@ -345,22 +325,22 @@
                                 <input type="date" name="end_date" id="assessment-end-date" class="form-control" required>
                             </div>
                         </div>
-                        <div class="form-group mt-3">
+                        <div class="form-group mb-3">
                             <label for="assessment-allowed-attempts" class="form-label">Intentos permitidos</label>
                             <input type="number" name="allowed_attempts" id="assessment-allowed-attempts" class="form-control" min="1" value="1" required>
                         </div>
-                        <div class="form-group mt-3">
+                        <div class="form-group mb-3">
                             <label for="assessment-time-limit" class="form-label">Límite de Tiempo (Minutos)</label>
                             <input type="number" name="time_limit" id="assessment-time-limit" class="form-control" min="0" value="0">
-                            <small class="form-text text-muted">Dejar en 0 o vacío para usar el tiempo estándar (60 minutos).</small>
+                            <small class="form-text text-muted">Usa 0 o vacío para el tiempo estándar (60 min).</small>
                         </div>
                         <div class="form-check mt-3">
-                            <input type="checkbox" name="active" id="assessment-active" class="form-check-input" checked>
-                            <label class="form-check-label" for="assessment-active">Activo</label>
+                            <input type="checkbox" name="active" id="assessment-active" class="form-check-input" checked value="1">
+                            <label class="form-check-label" for="assessment-active">Habilitar inmediatamente</label>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Crear Evaluación</button>
                     </div>
                 </form>
@@ -368,4 +348,43 @@
         </div>
     </div>
 
+    <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-success" id="createTaskModalLabel">Nueva Tarea Entregable</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                {{-- Modifica esta ruta 'action' para que apunte al controlador de tus tareas real --}}
+                <form action="{{ route('teacher.tasks.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="training_id" value="{{ $training->training_id }}">
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label for="task-title" class="form-label fw-bold">Título de la Tarea</label>
+                            <input type="text" name="title" id="task-title" class="form-control" required placeholder="Ej. Informe de Laboratorio 1">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="task-description" class="form-label">Indicaciones / Consigna</label>
+                            <textarea name="description" id="task-description" class="form-control" rows="3" required placeholder="Describe qué debe subir el alumno..."></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="task-due-date" class="form-label">Fecha Límite</label>
+                                <input type="date" name="due_date" id="task-due-date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="task-max-score" class="form-label">Puntaje Máximo</label>
+                                <input type="number" name="max_score" id="task-max-score" class="form-control" min="0" value="20" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn bg-success text-white">Publicar Tarea</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection

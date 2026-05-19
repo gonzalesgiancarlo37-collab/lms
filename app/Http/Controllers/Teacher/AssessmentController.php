@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Training;
 use App\Models\Assessment;
 use App\Models\Question;
-use App\Models\Alternative; // Actualizado: Cambiado de Option a Alternative
+use App\Models\Alternative; 
 use Illuminate\Support\Facades\DB;
 
 class AssessmentController extends Controller
@@ -27,7 +27,6 @@ class AssessmentController extends Controller
     {
         $user = auth()->user();
 
-        // Actualizado: Cambiado 'assessments.questions.options' a 'assessments.questions.alternatives'
         $training = Training::with(['course', 'assessments.questions.alternatives'])
             ->where('training_id', $id)
             ->where('teacher_id', $user->user_id)
@@ -44,8 +43,9 @@ class AssessmentController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'allowed_attempts' => 'required|integer|min:1',
-            'time_limit' => 'nullable|integer|min:1',
+            'time_limit' => 'nullable|integer|min:0',
             'active' => 'sometimes|boolean',
+            'description' => 'nullable|string',
         ]);
 
         $user = auth()->user();
@@ -65,13 +65,13 @@ class AssessmentController extends Controller
             'active' => $request->has('active'),
         ]);
 
-        return redirect()->route('teacher.assessments.show', $training->training_id)
+        // CORRECCIÓN: Ahora redirige al curso actual directo a la pestaña de contenidos
+        return redirect()->route('teacher.courses.show', ['course' => $training->training_id, 'tab' => 'contenido'])
             ->with('success', 'Evaluación creada correctamente.');
     }
 
     public function addQuestion(Request $request, $assessment_id)
     {
-        // Refactorizado: Validación limpia adaptada a alternatives
         $request->validate([
             'question_text' => 'required|string',
             'score' => 'required|integer|min:0',
@@ -90,7 +90,6 @@ class AssessmentController extends Controller
             abort(403, 'No autorizado.');
         }
 
-        // Ejecución segura mediante transacción
         DB::transaction(function () use ($request, $assessment) {
             $question = Question::create([
                 'assessment_id' => $assessment->assessment_id,
@@ -108,7 +107,7 @@ class AssessmentController extends Controller
             }
         });
 
-        return redirect()->route('teacher.assessments.show', $assessment->training->training_id)
+        return redirect()->route('teacher.assessments.show', ['id' => $assessment->training->training_id])
             ->with('success', 'Pregunta agregada correctamente.');
     }
 
@@ -150,7 +149,7 @@ class AssessmentController extends Controller
             'active' => $request->has('active'),
         ]);
 
-        return redirect()->route('teacher.assessments.show', $assessment->training->training_id)
+        return redirect()->route('teacher.assessments.show', ['id' => $assessment->training->training_id])
             ->with('success', 'Evaluación actualizada correctamente.');
     }
 
@@ -175,7 +174,7 @@ class AssessmentController extends Controller
         $trainingId = $assessment->training->training_id;
         $assessment->delete();
 
-        return redirect()->route('teacher.assessments.show', $trainingId)
+        return redirect()->route('teacher.assessments.show', ['id' => $trainingId])
             ->with('success', 'Evaluación eliminada correctamente.');
     }
 }
