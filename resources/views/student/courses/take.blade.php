@@ -43,17 +43,18 @@
                             </div>
 
                             <div class="mt-2">
-                                @foreach($question->options as $option)
+                                {{-- Cambiado de $question->options a $question->alternatives --}}
+                                @foreach($question->alternatives as $alternative)
                                     <div class="form-check mb-2">
                                         <input
                                             class="form-check-input"
                                             type="radio"
-                                            id="option_{{ $option->option_id }}"
+                                            id="option_{{ $alternative->option_id }}"
                                             name="answers[{{ $question->question_id }}]"
-                                            value="{{ $option->option_id }}"
+                                            value="{{ $alternative->option_id }}"
                                         >
-                                        <label class="form-check-label" for="option_{{ $option->option_id }}">
-                                            {{ $option->option_text }}
+                                        <label class="form-check-label" for="option_{{ $alternative->option_id }}">
+                                            {{ $alternative->option_text }}
                                         </label>
                                     </div>
                                 @endforeach

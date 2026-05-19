@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Training;
 use App\Models\Assessment;
 use App\Models\Question;
-use App\Models\Option;
+use App\Models\Alternative; // Actualizado: Cambiado de Option a Alternative
 use Illuminate\Support\Facades\DB;
 
 class AssessmentController extends Controller
@@ -27,7 +27,8 @@ class AssessmentController extends Controller
     {
         $user = auth()->user();
 
-        $training = Training::with(['course', 'assessments.questions.options'])
+        // Actualizado: Cambiado 'assessments.questions.options' a 'assessments.questions.alternatives'
+        $training = Training::with(['course', 'assessments.questions.alternatives'])
             ->where('training_id', $id)
             ->where('teacher_id', $user->user_id)
             ->firstOrFail();
@@ -96,7 +97,8 @@ class AssessmentController extends Controller
         ]);
 
         foreach ($request->options as $index => $optionData) {
-            Option::create([
+            // Actualizado: Usamos Alternative en lugar de Option
+            Alternative::create([
                 'question_id' => $question->question_id,
                 'option_text' => $optionData['text'],
                 'is_correct' => $request->correct_option == $index,
@@ -153,17 +155,14 @@ class AssessmentController extends Controller
     {
         $user = auth()->user();
 
-        // Buscamos la evaluación validando que pertenezca al entrenamiento
         $assessment = Assessment::with('training')
             ->where('assessment_id', $id)
             ->firstOrFail();
 
-        // Control de acceso: Validar que el profesor sea el dueño
         if ($assessment->training->teacher_id !== $user->user_id) {
             abort(403, 'No autorizado.');
         }
 
-        // Integridad de datos: No borrar si ya hay alumnos que rindieron el examen
         if ($assessment->attempts()->exists()) {
             return redirect()->back()->withErrors([
                 'assessment' => 'No se puede eliminar una evaluación que ya tiene intentos registrados.'
