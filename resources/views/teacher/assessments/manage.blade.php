@@ -81,13 +81,14 @@
                                                 <span class="badge bg-secondary">{{ $question->score }} pts</span>
                                             </div>
                                             <div class="list-group list-group-flush">
-                                                @foreach($question->options as $option)
+                                                {{-- Actualizado: Cambiado options a alternatives --}}
+                                                @foreach($question->alternatives as $alternative)
                                                     <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0 bg-transparent">
                                                         <div class="d-flex align-items-center gap-2">
                                                             <span class="text-muted">{{ $loop->iteration }}.</span>
-                                                            <span>{{ $option->option_text }}</span>
+                                                            <span>{{ $alternative->option_text }}</span>
                                                         </div>
-                                                        @if($option->is_correct)
+                                                        @if($alternative->is_correct)
                                                             <span class="badge bg-success">Correcta</span>
                                                         @endif
                                                     </div>
@@ -195,9 +196,9 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <label class="form-label mb-0">Alternativas</label>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="addOptionBtn">+ Añadir Opción</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addAlternativeBtn">+ Añadir Opción</button>
                             </div>
-                            <div id="optionsContainer"></div>
+                            <div id="alternativesContainer"></div>
                             <div class="text-muted small">Marca la alternativa correcta con el círculo.</div>
                         </div>
                     </div>
@@ -215,56 +216,56 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const addQuestionForm = document.getElementById('addQuestionForm');
-            const optionsContainer = document.getElementById('optionsContainer');
-            const addOptionBtn = document.getElementById('addOptionBtn');
-            let optionIndex = 0;
+            const alternativesContainer = document.getElementById('alternativesContainer');
+            const addAlternativeBtn = document.getElementById('addAlternativeBtn');
+            let alternativeIndex = 0;
 
-            function createOptionRow(index) {
+            function createAlternativeRow(index) {
                 const wrapper = document.createElement('div');
-                wrapper.className = 'd-flex align-items-center gap-2 mb-2 option-row';
+                wrapper.className = 'd-flex align-items-center gap-2 mb-2 alternative-row';
                 wrapper.innerHTML = `
                     <div class="input-group input-group-sm flex-grow-1">
                         <span class="input-group-text p-1">
-                            <input class="form-check-input mt-0" type="radio" name="correct_option" value="${index}" aria-label="Correcta" required>
+                            <input class="form-check-input mt-0" type="radio" name="correct_alternative" value="${index}" aria-label="Correcta" required>
                         </span>
-                        <input type="text" name="options[${index}][text]" class="form-control form-control-sm" placeholder="Opción ${index + 1}" required>
+                        <input type="text" name="alternatives[${index}][text]" class="form-control form-control-sm" placeholder="Opción ${index + 1}" required>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger remove-option-btn">Eliminar</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-alternative-btn">Eliminar</button>
                 `;
 
-                wrapper.querySelector('.remove-option-btn').addEventListener('click', function () {
+                wrapper.querySelector('.remove-alternative-btn').addEventListener('click', function () {
                     wrapper.remove();
-                    refreshOptionIndexes();
+                    refreshAlternativeIndexes();
                 });
 
                 return wrapper;
             }
 
-            function refreshOptionIndexes() {
-                optionIndex = 0;
-                optionsContainer.querySelectorAll('.option-row').forEach((row) => {
-                    row.querySelector('input[type="radio"]').value = optionIndex;
-                    row.querySelector('input[type="text"]').name = `options[${optionIndex}][text]`;
-                    row.querySelector('input[type="text"]').placeholder = `Opción ${optionIndex + 1}`;
-                    optionIndex++;
+            function refreshAlternativeIndexes() {
+                alternativeIndex = 0;
+                alternativesContainer.querySelectorAll('.alternative-row').forEach((row) => {
+                    row.querySelector('input[type="radio"]').value = alternativeIndex;
+                    row.querySelector('input[type="text"]').name = `alternatives[${alternativeIndex}][text]`;
+                    row.querySelector('input[type="text"]').placeholder = `Opción ${alternativeIndex + 1}`;
+                    alternativeIndex++;
                 });
             }
 
-            function resetOptions() {
-                optionsContainer.innerHTML = '';
-                optionIndex = 0;
-                addOptionRow();
-                addOptionRow();
+            function resetAlternatives() {
+                alternativesContainer.innerHTML = '';
+                alternativeIndex = 0;
+                addAlternativeRow();
+                addAlternativeRow();
             }
 
-            function addOptionRow() {
-                const row = createOptionRow(optionIndex);
-                optionsContainer.appendChild(row);
-                optionIndex++;
+            function addAlternativeRow() {
+                const row = createAlternativeRow(alternativeIndex);
+                alternativesContainer.appendChild(row);
+                alternativeIndex++;
             }
 
-            addOptionBtn.addEventListener('click', function () {
-                addOptionRow();
+            addAlternativeBtn.addEventListener('click', function () {
+                addAlternativeRow();
             });
 
             document.querySelectorAll('.add-question-btn').forEach(function (button) {
@@ -272,13 +273,12 @@
                     const action = this.dataset.action;
                     addQuestionForm.action = action;
                     addQuestionForm.reset();
-                    resetOptions();
+                    resetAlternatives();
                 });
             });
 
-            // Initialize default options if modal exists
-            if (optionsContainer) {
-                resetOptions();
+            if (alternativesContainer) {
+                resetAlternatives();
             }
 
             @if(session('success'))

@@ -71,12 +71,13 @@ class AssessmentController extends Controller
 
     public function addQuestion(Request $request, $assessment_id)
     {
+        // Refactorizado: Validación limpia adaptada a alternatives
         $request->validate([
             'question_text' => 'required|string',
             'score' => 'required|integer|min:0',
-            'options' => 'required|array|min:2',
-            'options.*.text' => 'required|string',
-            'correct_option' => 'required|integer|min:0',
+            'alternatives' => 'required|array|min:2',
+            'alternatives.*.text' => 'required|string',
+            'correct_alternative' => 'required|integer|min:0',
         ]);
 
         $user = auth()->user();
@@ -89,21 +90,23 @@ class AssessmentController extends Controller
             abort(403, 'No autorizado.');
         }
 
-        $question = Question::create([
-            'assessment_id' => $assessment->assessment_id,
-            'question_text' => $request->question_text,
-            'score' => $request->score,
-            'order_index' => $assessment->questions()->count() + 1,
-        ]);
-
-        foreach ($request->options as $index => $optionData) {
-            // Actualizado: Usamos Alternative en lugar de Option
-            Alternative::create([
-                'question_id' => $question->question_id,
-                'option_text' => $optionData['text'],
-                'is_correct' => $request->correct_option == $index,
+        // Ejecución segura mediante transacción
+        DB::transaction(function () use ($request, $assessment) {
+            $question = Question::create([
+                'assessment_id' => $assessment->assessment_id,
+                'question_text' => $request->question_text,
+                'score' => $request->score,
+                'order_index' => $assessment->questions()->count() + 1,
             ]);
-        }
+
+            foreach ($request->alternatives as $index => $alternativeData) {
+                Alternative::create([
+                    'question_id' => $question->question_id,
+                    'option_text'  => $alternativeData['text'],
+                    'is_correct'   => $request->correct_alternative == $index,
+                ]);
+            }
+        });
 
         return redirect()->route('teacher.assessments.show', $assessment->training->training_id)
             ->with('success', 'Pregunta agregada correctamente.');
