@@ -12,7 +12,6 @@ class StudentController extends Controller
     {
         $studentId = Auth::user()->user_id;
 
-        // Eager loading completo incluyendo .person para evitar queries ocultas en las vistas
         $enrollments = Enrollment::with([
             'training.course',
             'training.teacher.person'
@@ -21,8 +20,6 @@ class StudentController extends Controller
             ->get();
 
         $totalCourses = $enrollments->count();
-        
-        // Dinamizamos las métricas leyendo los estados reales ('C' de Completed, 'A' de Active)
         $completed = $enrollments->where('status', 'C')->count();
         $inProgress = $enrollments->where('status', 'A')->count();
 
@@ -38,25 +35,25 @@ class StudentController extends Controller
     {
         $studentId = Auth::user()->user_id;
 
-        // Cambiamos el enfoque: Partimos desde Enrollment para resolver todo en 1 sola query limpia
-        $enrollments = Enrollment::with([
+        $courses = Enrollment::with([
             'training.course',
             'training.teacher.person',
-            'progress' // Cargamos la relación de progreso si existe
+            'progress' 
         ])
             ->where('student_id', $studentId)
             ->get()
             ->map(function ($enrollment) {
-                // El progreso se calcula de forma segura basándose en el estado o en tu tabla de progreso
-                // Si usas tu lógica de estado 'C' (Completado) a nivel de inscripción:
-                $enrollment->progress_percentage = $enrollment->status === 'C' ? 100 : 0;
-
-                // Nota: Si en el futuro calculas el progreso por tareas completadas, 
-                // podrás hacerlo aquí usando la relación $enrollment->progress sin romper la vista.
+                // Si la relación progress contiene datos, extrae el porcentaje del primer registro
+                if ($enrollment->progress && $enrollment->progress->isNotEmpty()) {
+                    $enrollment->progress_percentage = $enrollment->progress->first()->percentage;
+                } else {
+                    // Si la colección de progreso está vacía, calculamos por defecto según el estado de la matrícula
+                    $enrollment->progress_percentage = $enrollment->status === 'C' ? 100 : 0;
+                }
                 
                 return $enrollment;
             });
 
-        return view('student.courses.index', compact('enrollments'));
+        return view('student.courses.index', compact('courses'));
     }
 }
