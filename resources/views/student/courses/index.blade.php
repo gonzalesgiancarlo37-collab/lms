@@ -12,26 +12,24 @@
             <div class="card-body text-center py-5">
                 <i class="bi bi-journal-x text-muted" style="font-size: 3rem;"></i>
                 <h5 class="card-title mt-4 text-dark fw-bold">Sin matrículas activas</h5>
-                <p class="text-muted">
-                    Actualmente no te encuentras registrado en ninguna capacitación. Contacta con el administrador.
-                </p>
+                <p class="text-muted">Actualmente no te encuentras registrado en ninguna capacitación. Contacta con el administrador.</p>
             </div>
         </div>
     @else
         <div class="row g-4">
             @foreach($courses as $enrollment)
-                <div class="col-12 col-md-6 col-lg-4">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                     <a href="{{ url('/student/courses/' . ($enrollment->training?->training_id ?? 1)) }}" class="text-decoration-none">
                         <div class="card h-100 shadow-sm rounded-3 border-0 position-relative overflow-hidden transition-all">
 
-                            <div class="bg-primary bg-gradient p-5 text-white d-flex align-items-center justify-content-center position-relative"
-                                style="height: 140px; font-size: 3rem; font-weight: bold; opacity: 0.9;">
+                            <div class="bg-primary bg-gradient p-4 text-white d-flex align-items-center justify-content-center position-relative"
+                                style="height: 120px; font-size: 2.5rem; font-weight: bold; opacity: 0.9;">
                                 {{ strtoupper(substr($enrollment->training?->course?->name ?? 'C', 0, 1)) }}
                             </div>
 
                             <div class="card-body d-flex flex-column">
                                 <div>
-                                    <h5 class="card-title fw-bold text-dark mb-2 line-clamp-2">
+                                    <h5 class="card-title fw-bold text-dark mb-2 line-clamp-2" style="font-size: 1.1rem;">
                                         {{ $enrollment->training?->course?->name ?? 'Curso no asignado' }}
                                     </h5>
                                     <p class="text-muted small mb-1">
@@ -93,31 +91,10 @@
 </div>
 
 <style>
-    /* Estilos personalizados para mantener consistencia con el diseño del Teacher */
-    .card {
-        transition: box-shadow 0.3s ease, transform 0.3s ease;
-    }
-
-    .card:hover {
-        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12) !important;
-        transform: translateY(-4px);
-    }
-
-    /* Limita el título a un máximo de 2 líneas si es muy largo */
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;  
-        overflow: hidden;
-    }
-
-    a {
-        color: inherit;
-        text-decoration: none !important;
-    }
-
-    a:hover {
-        color: inherit;
-    }
+    .card { transition: box-shadow 0.3s ease, transform 0.3s ease; }
+    .card:hover { box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12) !important; transform: translateY(-4px); }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    a { color: inherit; text-decoration: none !important; }
+    a:hover { color: inherit; }
 </style>
 @endsection
