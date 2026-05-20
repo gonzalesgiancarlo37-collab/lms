@@ -138,20 +138,6 @@
                 <span>Mis Cursos</span>
             </a>
         </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="#">
-                <i class="fas fa-fw fa-trophy"></i>
-                <span>Calificaciones</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="#">
-                <i class="fas fa-fw fa-certificate"></i>
-                <span>Certificados</span>
-            </a>
-        </li>
     @endif
 
     <hr class="sidebar-divider d-none d-md-block">
