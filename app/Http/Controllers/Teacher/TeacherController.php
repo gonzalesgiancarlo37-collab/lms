@@ -56,10 +56,11 @@ class TeacherController extends Controller
     {
         $user = auth()->user();
 
+        // Cargamos el training con sus evaluaciones y las relaciones necesarias para las notas
         $training = Training::with([
             'course',
+            'assessments.attempts', // Trae los intentos globales de las evaluaciones de este curso
             'enrollments.student.person',
-            'assessments'
         ])
             ->where('training_id', $id)
             ->where('teacher_id', $user->user_id)
@@ -69,7 +70,16 @@ class TeacherController extends Controller
         $totalAssessments = $training->assessments->count();
         $totalAttendanceRecords = Attendance::whereHas('schedule', fn($q) => $q->where('training_id', $id))->count();
 
-        return view('teacher.courses.show', compact('training', 'totalStudents', 'totalAssessments', 'totalAttendanceRecords'));
+        // Obtenemos los estudiantes directamente desde las inscripciones cargadas
+        $students = $training->enrollments;
+
+        return view('teacher.courses.show', compact(
+            'training', 
+            'totalStudents', 
+            'totalAssessments', 
+            'totalAttendanceRecords',
+            'students' // Enviamos los estudiantes para mapear la matriz en la vista
+        ));
     }
 
     public function students($id)

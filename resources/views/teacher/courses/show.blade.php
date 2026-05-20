@@ -239,24 +239,22 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tbody>
-                                                    @foreach($training->assessments as $assessment)
-                                                        <tr>
-                                                            <td>{{ $assessment->title }}</td>
-                                                            <td class="text-center">{{ $assessment->start_date ? \Carbon\Carbon::parse($assessment->start_date)->format('d/m/Y') : 'Sin fecha' }}</td>
-                                                            <td class="text-center">{{ $assessment->end_date ? \Carbon\Carbon::parse($assessment->end_date)->format('d/m/Y') : 'Sin fecha' }}</td>
-                                                            <td class="text-center">{{ $assessment->allowed_attempts }}</td>
-                                                            <td class="text-center">
-                                                                <span class="badge @if($assessment->active) bg-success @else bg-secondary @endif">{{ $assessment->active ? 'Activo' : 'Inactivo' }}</span>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <a href="{{ route('teacher.assessments.show', ['training_id' => $training->training_id]) }}" class="btn btn-sm btn-info text-white">
-                                                                    <i class="bi bi-pencil-square"></i> Gestionar Preguntas
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
+                                                @foreach($training->assessments as $assessment)
+                                                    <tr>
+                                                        <td>{{ $assessment->title }}</td>
+                                                        <td class="text-center">{{ $assessment->start_date ? \Carbon\Carbon::parse($assessment->start_date)->format('d/m/Y') : 'Sin fecha' }}</td>
+                                                        <td class="text-center">{{ $assessment->end_date ? \Carbon\Carbon::parse($assessment->end_date)->format('d/m/Y') : 'Sin fecha' }}</td>
+                                                        <td class="text-center">{{ $assessment->allowed_attempts }}</td>
+                                                        <td class="text-center">
+                                                            <span class="badge @if($assessment->active) bg-success @else bg-secondary @endif">{{ $assessment->active ? 'Activo' : 'Inactivo' }}</span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <a href="{{ route('teacher.assessments.show', ['training_id' => $training->training_id]) }}" class="btn btn-sm btn-info text-white">
+                                                                <i class="bi bi-pencil-square"></i> Gestionar Preguntas
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
                                             </tbody>
                                         </table>
                                     </div>
@@ -277,7 +275,7 @@
                                 <div class="card-body">
                                     <p class="text-muted small mb-3">Las tareas entregables asignadas se listan a continuación.</p>
                                     <div class="list-group list-group-flush">
-                                        @if($training->tasks->count() > 0)
+                                        @if($training->tasks && $training->tasks->count() > 0)
                                             @foreach($training->tasks as $task)
                                                 <div class="list-group-item px-0 py-3">
                                                     <div class="d-flex w-100 justify-content-between mb-1">
@@ -315,10 +313,105 @@
                     </div>
 
                 @elseif(request('tab') === 'calificaciones')
-                    <h5 class="fw-bold text-dark mb-3">Calificaciones</h5>
-                    <div class="alert alert-warning text-center mb-0" role="alert">
-                        <i class="bi bi-exclamation-triangle me-2"></i>El módulo de calificaciones estará disponible pronto.
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0">Consolidado de Calificaciones</h5>
+                        <button class="btn btn-sm btn-outline-success" onclick="window.print();">
+                            <i class="bi bi-printer me-1"></i> Imprimir Registro
+                        </button>
                     </div>
+
+                    @if($students->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle text-dark" style="font-size: 0.85rem;">
+                                <thead class="table-light text-center text-uppercase font-weight-bold" style="font-size: 0.75rem;">
+                                    <tr>
+                                        <th rowspan="2" class="align-middle text-start" style="min-width: 220px;">Estudiante</th>
+                                        @if($training->tasks && $training->tasks->count() > 0)
+                                            <th colspan="{{ $training->tasks->count() }}" class="text-info bg-light">Tareas Entregables</th>
+                                        @endif
+                                        @if($training->assessments->count() > 0)
+                                            <th colspan="{{ $training->assessments->count() }}" class="text-primary bg-light">Evaluaciones</th>
+                                        @endif
+                                        <th rowspan="2" class="align-middle bg-dark text-white" style="width: 75px;">Prom.</th>
+                                    </tr>
+                                    <tr>
+                                        {{-- Columnas de Tareas --}}
+                                        @if($training->tasks)
+                                            @foreach($training->tasks as $task)
+                                                <th class="fw-normal text-truncate small" style="max-width: 110px;" title="{{ $task->title }}">
+                                                    {{ Str::limit($task->title, 12) }}
+                                                </th>
+                                            @endforeach
+                                        @endif
+
+                                        {{-- Columnas de Evaluaciones --}}
+                                        @foreach($training->assessments as $assessment)
+                                            <th class="fw-normal text-truncate small" style="max-width: 110px;" title="{{ $assessment->title }}">
+                                                {{ Str::limit($assessment->title, 12) }}
+                                            </th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($students as $enrollment)
+                                        @php
+                                            $student = $enrollment->student;
+                                            $totalNotes = 0;
+                                            $notesCount = 0;
+                                        @endphp
+                                        <tr>
+                                            <td class="fw-bold text-secondary">
+                                                {{ $student->person->first_names }} {{ $student->person->last_names }}
+                                            </td>
+
+                                            {{-- Buscar notas de Tareas --}}
+                                            @if($training->tasks)
+                                                @foreach($training->tasks as $task)
+                                                    @php
+                                                        $submission = $task->submissions->where('student_id', $student->student_id)->first();
+                                                        $grade = $submission ? $submission->grade : null;
+                                                        if(!is_null($grade)) {
+                                                            $totalNotes += $grade;
+                                                            $notesCount++;
+                                                        }
+                                                    @endphp
+                                                    <td class="text-center @if(!is_null($grade)) {{ $grade >= 11 ? 'text-success fw-bold' : 'text-danger fw-bold' }} @else text-muted @endif">
+                                                        {{ !is_null($grade) ? $grade : '-' }}
+                                                    </td>
+                                                @endforeach
+                                            @endif
+
+                                            {{-- Buscar notas de Evaluaciones --}}
+                                            @foreach($training->assessments as $assessment)
+                                                @php
+                                                    $attempt = $assessment->attempts->where('student_id', $student->student_id)->max('score');
+                                                    if(!is_null($attempt)) {
+                                                        $totalNotes += $attempt;
+                                                        $notesCount++;
+                                                    }
+                                                @endphp
+                                                <td class="text-center @if(!is_null($attempt)) {{ $attempt >= 11 ? 'text-success fw-bold' : 'text-danger fw-bold' }} @else text-muted @endif">
+                                                    {{ !is_null($attempt) ? $attempt : '-' }}
+                                                </td>
+                                            @endforeach
+
+                                            {{-- Calcular promedio de la fila --}}
+                                            @php
+                                                $finalAverage = $notesCount > 0 ? round($totalNotes / $notesCount, 1) : 0;
+                                            @endphp
+                                            <td class="text-center fw-bold table-light {{ $finalAverage >= 11 ? 'text-success' : 'text-danger' }}">
+                                                {{ $finalAverage > 0 ? $finalAverage : '-' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="alert alert-info text-center mb-0" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>No hay estudiantes registrados para procesar calificaciones.
+                        </div>
+                    @endif
                 @endif
             </div>
         </div>
