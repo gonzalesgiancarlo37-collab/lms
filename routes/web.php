@@ -113,4 +113,7 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'role:Student'])
 
     Route::get('/assessment/{id}/take', [StudentCourseController::class, 'takeExam'])->name('assessment.take');
     Route::post('/assessment/{id}/submit', [StudentCourseController::class, 'submitExam'])->name('assessment.submit');
+    
+    // RUTA ADICIONADA: Envío de tareas gestionado por el controlador existente
+    Route::post('/tasks/{task}/submit', [StudentCourseController::class, 'submitTask'])->name('tasks.submit');
 });

@@ -54,7 +54,7 @@
                                 {{ $submission->created_at ? $submission->created_at->format('d/m/Y H:i') : '-' }}
                             </td>
                             <td style="padding: 15px 20px;">
-                                <div style="max-w: 250px;">
+                                <div style="max-width: 250px;">
                                     @if($submission->file_path)
                                         <a href="{{ asset('storage/' . $submission->file_path) }}" target="_blank" 
                                            style="color: #2563eb; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center;">
@@ -100,7 +100,7 @@
 </div>
 
 <div id="gradeModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 15px;">
-    <div style="background: white; border-radius: 12px; max-width: 400px; w-width: 100%; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #f3f4f6;">
+    <div style="background: white; border-radius: 12px; max-width: 400px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #f3f4f6;">
         
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #e5e7eb;">
             <h3 style="font-size: 18px; font-weight: bold; color: #1f2937; margin: 0;">Evaluar Entrega</h3>
@@ -117,7 +117,7 @@
                 </div>
 
                 <div>
-                    <label style="display: block; font-size: 14px; font-medium; color: #4b5563; margin-bottom: 5px;">Feedback / Retroalimentación</label>
+                    <label style="display: block; font-size: 14px; font-weight: 500; color: #4b5563; margin-bottom: 5px;">Feedback / Retroalimentación</label>
                     <textarea name="feedback" id="modal_feedback" rows="4"
                               style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; resize: none;"></textarea>
                 </div>
@@ -146,9 +146,10 @@
     function openGradeModal(submission) {
         form.action = `/teacher/submissions/${submission.submission_id}/grade`;
         gradeInput.value = submission.grade !== null ? submission.grade : '';
-        feedbackTextarea.value = submission.feedback !== null ? submission.feedback : '';
         
-        // Corrección de despliegue universal en JS
+        // CORRECCIÓN: Apuntar al campo real de tu base de datos (teacher_feedback)
+        feedbackTextarea.value = submission.teacher_feedback !== null ? submission.teacher_feedback : '';
+        
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }

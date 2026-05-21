@@ -7,7 +7,9 @@ use App\Models\Assessment;
 use App\Models\AssessmentAttempt;
 use App\Models\Enrollment;
 use App\Models\Training;
+use App\Models\TaskSubmission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class CourseController extends Controller
@@ -24,7 +26,7 @@ class CourseController extends Controller
             abort(403, 'No estás inscrito en esta capacitación.');
         }
 
-        $training = Training::with(['course', 'teacher.person', 'assessments'])
+        $training = Training::with(['course', 'teacher.person', 'assessments', 'tasks.submissions'])
             ->where('training_id', $id)
             ->firstOrFail();
 
@@ -40,11 +42,40 @@ class CourseController extends Controller
         return view('student.courses.show', compact('training', 'attempts'));
     }
 
+    // MÉTODO ACTUALIZADO: Maneja la subida física de archivos (.pdf, .docx, .xlsx, etc.)
+    public function submitTask(Request $request, $taskId)
+    {
+        $request->validate([
+            'task_file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar,png,jpg,odt,ods|max:12288',
+        ]);
+
+        if ($request->hasFile('task_file')) {
+            $file = $request->file('task_file');
+            
+            // Genera un nombre único y limpio para el archivo
+            $fileName = 'submission_' . auth()->id() . '_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Lo guarda en storage/app/public/submissions (Debes ejecutar php artisan storage:link)
+            $filePath = $file->storeAs('submissions', $fileName, 'public');
+
+            // Crear el registro apuntando a la ruta física del archivo
+            TaskSubmission::create([
+                'task_id'      => $taskId,
+                'student_id'   => auth()->id(),
+                'file_path'    => $filePath, 
+                'submitted_at' => Carbon::now(),
+            ]);
+
+            return back()->with('success', '¡Tu archivo ha sido subido e ingresado con éxito!');
+        }
+
+        return back()->withErrors(['task_file' => 'No se pudo procesar el archivo seleccionado.']);
+    }
+
     public function takeExam($assessment_id)
     {
         $studentId = auth()->id();
 
-        // Actualizado: Cambiado 'questions.options' a 'questions.alternatives'
         $assessment = Assessment::with('questions.alternatives')
             ->where('assessment_id', $assessment_id)
             ->firstOrFail();
@@ -89,7 +120,6 @@ class CourseController extends Controller
     {
         $studentId = auth()->id();
 
-        // Actualizado: Cambiado 'questions.options' a 'questions.alternatives'
         $assessment = Assessment::with('questions.alternatives')
             ->where('assessment_id', $assessment_id)
             ->firstOrFail();
@@ -100,7 +130,6 @@ class CourseController extends Controller
 
         $this->validateAssessmentAvailability($assessment);
 
-        // Actualizado: Cambiado 'exists:options,option_id' a 'exists:alternatives,option_id'
         $validated = $request->validate([
             'attempt_id' => 'required|integer|exists:assessment_attempts,attempt_id',
             'answers' => 'required|array',
@@ -137,7 +166,6 @@ class CourseController extends Controller
             $selectedOptionId = $responses[$question->question_id] ?? null;
 
             if ($selectedOptionId) {
-                // Actualizado: Cambiado $question->options a $question->alternatives
                 $selectedOption = $question->alternatives->firstWhere('option_id', $selectedOptionId);
 
                 if ($selectedOption && $selectedOption->is_correct) {
